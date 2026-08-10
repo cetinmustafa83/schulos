@@ -2492,7 +2492,7 @@ export default function SubjectsView() {
               <Input
                 value={changeRequestForm.title}
                 onChange={(e) => setChangeRequestForm({ ...changeRequestForm, title: e.target.value })}
-                placeholder="Title of the change request"
+                placeholder="Titel der Änderungsanfrage"
                 className="mt-1"
               />
             </div>
@@ -2501,7 +2501,7 @@ export default function SubjectsView() {
               <Textarea
                 value={changeRequestForm.description}
                 onChange={(e) => setChangeRequestForm({ ...changeRequestForm, description: e.target.value })}
-                placeholder="Describe the requested change..."
+                placeholder="Beschreiben Sie die gewünschte Änderung..."
                 className="mt-1"
                 rows={3}
               />

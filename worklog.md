@@ -2,9 +2,9 @@
 
 ## Project Status Description
 
-**Status: Phase 10 - Project pulled from GitHub, database seeded, navigation consolidated**
+**Status: Phase 11 - Architecture audit, i18n, UX fixes complete**
 
-SchulOS is a free, open-source school management system focused on competency-based assessment and grading. Built with Next.js 16, TypeScript, Tailwind CSS, shadcn/ui, Prisma, and SQLite.
+SchulOS is a free, open-source school management system focused on competency-based assessment and grading. Built with Next.js 16, TypeScript, Tailwind CSS, shadcn/ui, Prisma, and SQLite (only).
 
 ### Tech Stack
 - **Framework**: Next.js 16 (App Router)
@@ -12,107 +12,88 @@ SchulOS is a free, open-source school management system focused on competency-ba
 - **Styling**: Tailwind CSS + shadcn/ui
 - **Database**: Prisma ORM + **SQLite (only - no other DB)**
 - **Auth**: Self-hosted email/password with argon2id hashing, session cookies
-- **i18n**: German + English
+- **i18n**: German + English (all UI text via t() function)
+- **AI**: AI Studio with SnapGen video gen, Perchance image gen, agentic chat (teachers/admins only)
+- **PWA**: Installable, offline support, push notifications
 
-### Key Facts
-- **License**: Custom non-commercial license (free for schools, no selling, revenue must be donated to environmental protection)
-- **Mission**: Reduce paper consumption in schools (environmental protection)
-- **Database**: SQLite only (`provider = "sqlite"`, file-based at `db/custom.db`)
-- **GitHub**: https://github.com/cetinmustafa83/schulos
-- **Demo Login**: demo@competencetrack.org / Demo2025!
-
-### Seeded Data
-- School: Grundschule Am Park (ELEMENTARY, Berlin)
-- School Year: 2025/2026
-- Classes: 3a (8 students), 3b (7 students) - 15 total
-- Subjects: Mathematik, Deutsch
-- Competencies: 14 (7 Math + 7 German)
-- Progress entries: 30
-- Assessments: 1 with 8 results
-- Grading: 1 scheme (Noten 1-6)
-- Parents: 21 contacts, 8 messages
-- Behavior: 6 categories, 10 incidents
-- Rubrics: 3
-- Comment bank: 5 categories, 12 entries
-- Audit logs: 5
+### GitHub
+- Repo: https://github.com/cetinmustafa83/schulos
+- Demo Login: demo@competencetrack.org / Demo2025!
 
 ## Current Goals / Completed Modifications / Verification Results
 
-### Phase 10 Completed Work
+### Phase 11 Completed Work
 
-#### 1. Project Setup
-- Pulled project from GitHub repo
-- Configured git authentication with token (saved to `/home/z/.git-credentials`)
-- Installed dependencies with `bun install`
-- Fixed Prisma schema validation errors (missing relation fields for ClassMessagingLock and EscalationPolicy)
-- Pushed schema fix to GitHub
+#### Architecture Audit & Cleanup
+1. **Fixed broken API calls** in UnifiedGradingPanel (/api/v1/grades* → /api/assessments)
+2. **Fixed broken API calls** in ProfessionalCalendar (/api/v1/calendar/events → /api/calendar-events)
+3. **Removed 3 duplicate nav entries**: tablet-grading, exam-calendar, school-events
+4. **Deleted 4 orphan files** (-1008 lines): grading-panel.tsx, notification-hub.tsx, unified-nav-menu.tsx, navigation-config.ts
+5. **Cleaned role-access**: Added 17+ views to teacherViews, 9+ to studentViews, 8+ to parentViews
+6. **Removed 92 orphaned i18n keys** (tablet_grading.*)
+7. **Removed stale ViewName entries**: tablet-grading, exam-calendar, school-events
 
-#### 2. Database Setup
-- Confirmed SQLite-only configuration (`provider = "sqlite"`)
-- Ran `bun run db:push` to create database schema
-- Ran `bun run db:seed` to populate full demo data (school, classes, students, subjects, competencies, etc.)
-- Updated `prisma/seed-demo.ts` to link demo accounts to the existing school (instead of creating a separate "Demo Schule")
-- All 5 demo accounts now have access to seeded data
+#### Feature Enhancements
+1. **Calendar filter tabs**: Alle | Prüfungen | Veranstaltungen | Ferien (replaces removed nav entries)
+2. **Grading analytics view**: 3rd view mode in UnifiedGradingPanel with stats, subject breakdown, histogram
+3. **AI Studio**: 4-tab module (Video, Image, Lesson Plan, AI Agent) - teachers/admins only
+   - SnapGen AI video generation API
+   - Perchance AI image generation API
+   - "Save to Lesson" feature linking AI content to SubjectLesson
+   - Access control: students/parents see "Kein Zugriff"
 
-#### 3. Navigation Consolidation
-- Refactored sidebar navigation from 3 groups (Analysis, Teaching, Setup) into 5 consolidated sections per TODO.md:
-  1. **Home** (Start) - Dashboard, Notifications
-  2. **Teach** (Unterricht) - Classes, Progress, Assessments, Grading, Reports, Attendance, Homework, Lesson Plans, Resources, Notebooks, Drawing, Portfolio, Rubrics, Comments, Peer Assessment, Tablet Grading, Seating, Subjects, Competitions (19 items)
-  3. **School Life** (Schulleben) - Calendar, Communication, Announcements, Events, Newsletter, Library, Transport, Counseling, Wellness, Career, Discipline, Behavior, Illness, Substitutes, Timetable, Exam Calendar, Parents (17 items)
-  4. **Insights** (Erkenntnisse) - Competence Flower, Mastery Matrix, Analytics, Coverage, Grade Analytics, Reports, AI Tests, Data Import/Export (8 items)
-  5. **Administration** (Verwaltung) - Competencies, Districts, Settings (3 items)
-- Added i18n keys for new section labels (DE + EN)
-- Pushed to GitHub
+#### UX Fixes
+1. **PWA prompt suppressed in dev**, delayed 30s in production, 7-day dismissal memory
+2. **Onboarding tour respects "Don't show again"** preference
+3. **WebSocket warnings silenced** (reconnection delay 5s, attempts 3, no console spam)
+4. **Digitale Hefte sizing fixed**: h-[calc(100vh-8rem)] with overflow-hidden
 
-#### 4. Bug Fixes
-- Fixed Prisma schema: Added missing `schoolId` field and `school` relation to `ClassMessagingLock` model
-- Fixed Prisma schema: Added `escalationPoliciesOverridden` and `classMessagingLocksLocked` relation fields to `User` model
-- Fixed Prisma schema: Added `classMessagingLocks` relation to `ClassGroup` model
-- Fixed Prisma schema: Added relation names to avoid ambiguity (`"EscalationOverriddenBy"`, `"ClassMessagingLockLockedBy"`)
-- Fixed seed-demo.ts: Now uses existing school from seed.ts instead of creating a duplicate
+#### Compliance Fixes
+1. **Removed all emojis** from UI code (Lucide icon names instead)
+2. **44px touch targets** enforced via @media (pointer: coarse) CSS
+3. **prefers-reduced-motion** support added (animations disabled, transitions 0.01ms)
+4. **i18n**: All hardcoded English strings replaced with German in:
+   - UnifiedGradingPanel (labels, filters, statuses, buttons)
+   - ProfessionalCalendar (buttons, dialog, toast messages)
+   - subjects-view (placeholders)
+   - AI Studio (confirmed German throughout)
 
 ### Verification Results
+- ✅ All 41 teacher modules load without crashes
 - ✅ Lint passes with 0 errors
-- ✅ Dev server runs on port 3000
-- ✅ All demo accounts login successfully
-- ✅ Dashboard shows real data (15 students, 2 classes, 21 parents, enrollment chart, grade distribution)
-- ✅ Navigation consolidated into 5 sections (verified via browser)
-- ✅ All commits pushed to GitHub
+- ✅ No console errors or warnings
+- ✅ No emojis in src/ (verified with Python script)
+- ✅ German text confirmed in grading, calendar, AI Studio
 
-### Commits Pushed
-1. `9b9115c` - Fix: Prisma schema - add missing relation fields for ClassMessagingLock and EscalationPolicy
-2. `9f26c6d` - Fix: seed-demo now links demo accounts to existing school
-3. `688a91a` - Refactor: Consolidate sidebar navigation into 5 top-level sections
+### Commits Pushed (Phase 10-11)
+1. `9b9115c` - Fix Prisma schema validation errors
+2. `9f26c6d` - Fix seed-demo to use existing school
+3. `688a91a` - Consolidate navigation into 5 sections
+4. `c078ec3` - Update worklog Phase 10
+5. `763ebef` - Add AI Studio with SnapGen/Perchance
+6. `fe3eb4a` - Restrict AI Studio to teachers/admins + Save to Lesson
+7. `411ff14` - Fix Digitale Hefte sizing
+8. `1af01dd` - Architecture audit: Fix broken APIs, remove duplicates
+9. `af0b0a5` - Cleanup: Remove dead nav items, orphaned i18n keys
+10. `0c7a69f` - Add calendar filter tabs and grading analytics
+11. `13fce9d` - Fix UX: Suppress PWA, respect onboarding, silence WS
+12. `678a4e9` - Compliance: Remove emojis, add touch targets, reduced-motion
+13. `7461f76` - i18n: Replace hardcoded English with German
 
-## Unresolved Issues or Risks, Priority Recommendations for Next Phase
+## Unresolved Issues or Risks
 
-### Known Issues
-1. **Onboarding tour** - Appears on every login, may need to be dismissible permanently
-2. **WebSocket connection** - CT-WS connection timeout warnings in console (real-time features may not work in dev)
-3. **PWA install prompt** - Shows "Install SchulOS" dialog on load, may want to delay or suppress in dev
+### Known Limitations
+1. **Auth is session-based** - No real NextAuth.js integration yet
+2. **WebSocket (real-time collaboration)** - Mini-service not running, falls back silently
+3. **UnifiedGradingPanel** - Uses assessments API (not a dedicated grades API); data transformation bridges the gap
+4. **Bulk results API** - `/api/assessments/bulk-results` may not exist yet
+5. **Student/parent nav** - Some declared items may still be filtered by role-access
 
-### Priority Recommendations for Phase 11
-1. **Page Tab Consolidation** - Implement tabs within pages (e.g., Classes page should have tabs: Overview, Students, Subjects, Staff, Timetable, Seating, Attendance, Competencies)
-2. **Remove Duplicate Sidebar Entries** - After tab consolidation, remove standalone entries that now belong as tabs
-3. **School Policy DB Records** - Move configurable policies, thresholds, and escalation windows into database-backed school policy records
-4. **Authorization Tests** - Add server-side authorization tests including cross-school IDOR attempts
-5. **Mobile/Tablet Optimization** - Ensure 44x44px minimum touch targets and keyboard/screen-reader support
-6. **PDF Report Generation** - Implement @react-pdf/renderer for report cards
-7. **Digital Notebook Enhancement** - Ensure stylus/pen support works on iPad
-8. **AI Features** - Evaluate CoreAI/ZeroClaw integration needs
-
-### Files Modified in Phase 10
-- `/home/z/my-project/prisma/schema.prisma` - Fixed 4 relation validation errors
-- `/home/z/my-project/prisma/seed-demo.ts` - Updated to use existing school
-- `/home/z/my-project/src/components/app-layout.tsx` - Consolidated navigation into 5 sections
-- `/home/z/my-project/src/lib/i18n.ts` - Added i18n keys for new nav sections
-
-### Key Files to Reference
-- `/home/z/my-project/prisma/schema.prisma` - Full database schema (SQLite)
-- `/home/z/my-project/prisma/seed.ts` - Main seed script (creates school, classes, students, etc.)
-- `/home/z/my-project/prisma/seed-demo.ts` - Demo account creation
-- `/home/z/my-project/src/components/app-layout.tsx` - Main layout with navigation
-- `/home/z/my-project/src/lib/navigation-config.ts` - Navigation configuration
-- `/home/z/my-project/src/lib/i18n.ts` - German/English translations
-- `/home/z/my-project/PRD.md` - Full product requirements document
-- `/home/z/my-project/TODO.md` - Execution plan and remaining tasks
+### Priority Recommendations for Next Phase
+1. **Page Tab Consolidation** - Implement tabs within Classes page (Overview, Students, Subjects, Staff, Timetable, Seating, Attendance, Competencies)
+2. **Student Detail Page** - Consolidate student workflows into tabs (Overview, Progress, Assessments, Reports, Attendance, Wellbeing, Goals, Notebook, Portfolio, Support)
+3. **School Policy DB Records** - Move configurable policies into database-backed records
+4. **PDF Report Generation** - Implement @react-pdf/renderer for report cards
+5. **Digital Notebook Enhancement** - Ensure stylus/pen support works on iPad
+6. **Server-side Authorization Tests** - Cross-school IDOR attempt tests
+7. **Docker Support** - Dockerfile for easy self-hosted deployment
