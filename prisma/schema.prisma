@@ -1376,9 +1376,13 @@ model Homework {
   attachments     String?  // JSON array of attachment URLs
   isPublished     Boolean  @default(true)
   isDemo          Boolean  @default(false)
+  // AI-generated content linked from SubjectLesson
+  aiLessonId      String?  // link to SubjectLesson with AI content
+  aiVideoUrl      String?  // direct AI video URL for this homework
+  aiImageUrl      String?  // direct AI image URL for this homework
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
-  deletedAt       DateTime?
+  deletedAt   DateTime?
 
   school School   @relation(fields: [schoolId], references: [id])
   classGroup ClassGroup @relation(fields: [classGroupId], references: [id])
@@ -2181,6 +2185,14 @@ model SubjectLesson {
   sortOrder   Int      @default(0)
   estimatedMinutes Int? // estimated time to complete
   isDemo      Boolean  @default(false)
+  // AI-generated content (created by teachers/admins)
+  aiVideoUrl      String?  // AI-generated explanatory video URL
+  aiImageUrl      String?  // AI-generated illustration image URL
+  aiThumbnailUrl  String?  // Video thumbnail
+  aiPrompt        String?  // Original prompt used for generation
+  aiProvider      String?  // "snapgen" | "perchance" | "zai"
+  aiGeneratedAt   DateTime?
+  aiGeneratedBy   String?  // userId of teacher/admin who generated
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   deletedAt   DateTime?

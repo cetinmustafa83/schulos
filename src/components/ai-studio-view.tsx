@@ -7,6 +7,7 @@ import {
   Loader2, Download, Play, RefreshCw, Copy, Check,
   Film, Wand2, BookOpen, Lightbulb, GraduationCap,
   Clock, CheckCircle2, AlertCircle, Settings,
+  Save, Link2, BookMarked,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,8 +17,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useAppStore } from '@/lib/store';
 import { t } from '@/lib/i18n';
+import { apiGet, apiPost, apiPut } from '@/lib/api';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -44,6 +47,29 @@ export default function AIStudioView() {
   const { currentUser } = useAppStore();
   const [activeTab, setActiveTab] = useState<AITab>('video');
 
+  // Access control: Only teachers and admins can use AI Studio
+  const role = currentUser?.role;
+  const canAccess = role === 'SCHOOL_ADMIN' || role === 'SUPER_ADMIN' || role === 'TEACHER' || role === 'VICE_PRINCIPAL';
+
+  if (!canAccess) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <div className="rounded-2xl bg-rose-50 dark:bg-rose-950/30 p-6 mb-4">
+          <AlertCircle className="h-12 w-12 text-rose-500" />
+        </div>
+        <h2 className="text-xl font-bold">Kein Zugriff</h2>
+        <p className="text-sm text-muted-foreground mt-2 max-w-md">
+          Das AI Studio ist nur für Lehrkräfte und die Schulleitung verfügbar.
+          Schüler und Eltern haben keinen Zugriff auf diese Funktion.
+        </p>
+        <p className="text-xs text-muted-foreground mt-4">
+          AI-generated content (videos, images) wird von Lehrkräften erstellt
+          und kann dann in Hausaufgaben und Unterrichtsmaterialien betrachtet werden.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -54,7 +80,7 @@ export default function AIStudioView() {
             AI Studio
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            KI-gestützte Content-Erstellung für den Unterricht
+            KI-gestützte Content-Erstellung für den Unterricht — nur für Lehrkräfte & Administration
           </p>
         </div>
         <Badge variant="outline" className="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400">
@@ -143,6 +169,8 @@ function VideoGenerationTab() {
   const [status, setStatus] = useState<GenStatus>('idle');
   const [result, setResult] = useState<VideoResult | null>(null);
   const [pollInterval, setPollInterval] = useState<NodeJS.Timeout | null>(null);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const { currentUser } = useAppStore();
 
   const handleGenerate = useCallback(async () => {
     if (!prompt.trim()) {
@@ -404,11 +432,14 @@ function VideoGenerationTab() {
                   className="w-full rounded-lg border"
                   poster={result.thumbnailUrl || undefined}
                 />
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Button size="sm" variant="outline" asChild>
                     <a href={result.videoUrl} download="ai-video.mp4">
                       <Download className="h-4 w-4 mr-1" /> Herunterladen
                     </a>
+                  </Button>
+                  <Button size="sm" variant="default" onClick={() => setSaveDialogOpen(true)}>
+                    <Save className="h-4 w-4 mr-1" /> Zur Lektion speichern
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => { setStatus('idle'); setResult(null); }}>
                     <RefreshCw className="h-4 w-4 mr-1" /> Neu
@@ -435,6 +466,20 @@ function VideoGenerationTab() {
           </AnimatePresence>
         </CardContent>
       </Card>
+
+      {/* Save to Lesson Dialog */}
+      {result?.videoUrl && currentUser && (
+        <SaveToLessonDialog
+          open={saveDialogOpen}
+          onOpenChange={setSaveDialogOpen}
+          contentType="video"
+          contentUrl={result.videoUrl}
+          prompt={prompt}
+          provider={result.provider || 'zai'}
+          userId={currentUser.id}
+          schoolId={currentUser.schoolId || ''}
+        />
+      )}
     </div>
   );
 }
@@ -447,6 +492,8 @@ function ImageGenerationTab() {
   const [status, setStatus] = useState<GenStatus>('idle');
   const [result, setResult] = useState<ImageResult | null>(null);
   const [copied, setCopied] = useState(false);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const { currentUser } = useAppStore();
 
   const handleGenerate = useCallback(async () => {
     if (!prompt.trim()) {
@@ -587,11 +634,14 @@ function ImageGenerationTab() {
                 className="space-y-3"
               >
                 <img src={imageSrc} alt={prompt} className="w-full rounded-lg border" />
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <Button size="sm" variant="outline" asChild>
                     <a href={imageSrc} download="ai-image.png">
                       <Download className="h-4 w-4 mr-1" /> Herunterladen
                     </a>
+                  </Button>
+                  <Button size="sm" variant="default" onClick={() => setSaveDialogOpen(true)}>
+                    <Save className="h-4 w-4 mr-1" /> Zur Lektion speichern
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(imageSrc); setCopied(true); setTimeout(() => setCopied(false), 2000); }}>
                     {copied ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
@@ -615,6 +665,20 @@ function ImageGenerationTab() {
           </AnimatePresence>
         </CardContent>
       </Card>
+
+      {/* Save to Lesson Dialog */}
+      {imageSrc && currentUser && (
+        <SaveToLessonDialog
+          open={saveDialogOpen}
+          onOpenChange={setSaveDialogOpen}
+          contentType="image"
+          contentUrl={imageSrc}
+          prompt={prompt}
+          provider={result?.provider || 'zai'}
+          userId={currentUser.id}
+          schoolId={currentUser.schoolId || ''}
+        />
+      )}
     </div>
   );
 }
@@ -637,11 +701,10 @@ function LessonPlanTab() {
     setStatus('generating');
 
     try {
-      const res = await fetch('/api/ai', {
+      const res = await fetch('/api/ai/lesson-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'lesson-plan',
           subject,
           topic,
           classLevel,
@@ -778,14 +841,14 @@ function AgentChatTab() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/ai', {
+      const res = await fetch('/api/ai/agent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'chat',
           message: input,
           context: 'teacher-assistant',
           language: 'de',
+          conversationHistory: messages.map(m => ({ role: m.role, content: m.content })),
         }),
       });
 
@@ -891,5 +954,155 @@ function AgentChatTab() {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+// ─── Save to Lesson Dialog ─────────────────────────────────────────
+
+interface SaveToLessonDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  contentType: 'video' | 'image';
+  contentUrl: string;
+  prompt: string;
+  provider: string;
+  userId: string;
+  schoolId: string;
+}
+
+function SaveToLessonDialog({ open, onOpenChange, contentType, contentUrl, prompt, provider, userId, schoolId }: SaveToLessonDialogProps) {
+  const [subjects, setSubjects] = useState<any[]>([]);
+  const [topics, setTopics] = useState<any[]>([]);
+  const [lessons, setLessons] = useState<any[]>([]);
+  const [selectedSubject, setSelectedSubject] = useState('');
+  const [selectedTopic, setSelectedTopic] = useState('');
+  const [selectedLesson, setSelectedLesson] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  // Fetch subjects
+  useEffect(() => {
+    if (open && schoolId) {
+      apiGet(`/api/subjects?schoolId=${schoolId}`).then(data => {
+        setSubjects(data || []);
+      }).catch(() => {});
+    }
+  }, [open, schoolId]);
+
+  // Fetch topics when subject changes
+  useEffect(() => {
+    if (selectedSubject) {
+      apiGet(`/api/subject-topics?subjectId=${selectedSubject}&schoolId=${schoolId}`).then(data => {
+        setTopics(data || []);
+      }).catch(() => {});
+      setSelectedTopic('');
+      setLessons([]);
+    }
+  }, [selectedSubject, schoolId]);
+
+  // Fetch lessons when topic changes
+  useEffect(() => {
+    if (selectedTopic) {
+      apiGet(`/api/subject-lessons?topicId=${selectedTopic}`).then(data => {
+        setLessons(data || []);
+      }).catch(() => {});
+      setSelectedLesson('');
+    }
+  }, [selectedTopic]);
+
+  const handleSave = async () => {
+    if (!selectedLesson) {
+      toast.error('Bitte wähle eine Lektion aus');
+      return;
+    }
+    setSaving(true);
+    try {
+      const updateData: any = {
+        aiPrompt: prompt,
+        aiProvider: provider,
+        aiGeneratedAt: new Date().toISOString(),
+        aiGeneratedBy: userId,
+      };
+
+      if (contentType === 'video') {
+        updateData.aiVideoUrl = contentUrl;
+      } else {
+        updateData.aiImageUrl = contentUrl;
+      }
+
+      await apiPut(`/api/subject-lessons/${selectedLesson}`, updateData);
+      toast.success(contentType === 'video' ? 'Video zur Lektion gespeichert!' : 'Bild zur Lektion gespeichert!');
+      onOpenChange(false);
+    } catch (error: any) {
+      toast.error('Fehler beim Speichern: ' + (error.message || 'Unbekannt'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Zur Lektion speichern</DialogTitle>
+          <DialogDescription className="sr-only">Save AI content to a subject lesson</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div>
+            <Label className="text-sm">Fach</Label>
+            <Select value={selectedSubject} onValueChange={setSelectedSubject}>
+              <SelectTrigger className="mt-1.5"><SelectValue placeholder="Fach wählen..." /></SelectTrigger>
+              <SelectContent>
+                {subjects.map((s: any) => (
+                  <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {selectedSubject && (
+            <div>
+              <Label className="text-sm">Thema</Label>
+              <Select value={selectedTopic} onValueChange={setSelectedTopic}>
+                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Thema wählen..." /></SelectTrigger>
+                <SelectContent>
+                  {topics.map((t: any) => (
+                    <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          {selectedTopic && (
+            <div>
+              <Label className="text-sm">Lektion</Label>
+              <Select value={selectedLesson} onValueChange={setSelectedLesson}>
+                <SelectTrigger className="mt-1.5"><SelectValue placeholder="Lektion wählen..." /></SelectTrigger>
+                <SelectContent>
+                  {lessons.map((l: any) => (
+                    <SelectItem key={l.id} value={l.id}>{l.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          {selectedLesson && (
+            <div className="rounded-lg bg-muted p-3 text-xs">
+              <p className="font-medium mb-1">Vorschau:</p>
+              <p className="text-muted-foreground">
+                {contentType === 'video' ? 'Video' : 'Bild'} wird mit der Lektion verknüpft.
+                Schüler können es in Hausaufgaben und Unterrichtsmaterialien sehen.
+              </p>
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Abbrechen</Button>
+          <Button onClick={handleSave} disabled={!selectedLesson || saving}>
+            {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+            Speichern
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

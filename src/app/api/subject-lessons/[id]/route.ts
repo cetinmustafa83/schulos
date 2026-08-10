@@ -70,6 +70,14 @@ const updateLessonSchema = z.object({
   difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
   sortOrder: z.number().int().optional(),
   estimatedMinutes: z.number().int().optional().nullable(),
+  // AI-generated content fields
+  aiVideoUrl: z.string().optional().nullable(),
+  aiImageUrl: z.string().optional().nullable(),
+  aiThumbnailUrl: z.string().optional().nullable(),
+  aiPrompt: z.string().optional().nullable(),
+  aiProvider: z.string().optional().nullable(),
+  aiGeneratedAt: z.date().optional().nullable(),
+  aiGeneratedBy: z.string().optional().nullable(),
 });
 
 async function updateLesson(
