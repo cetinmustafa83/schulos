@@ -240,7 +240,7 @@ export default function OnboardingTour({ open, onClose }: OnboardingTourProps) {
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { if (!isOpen) handleSkip(); }}>
-      <DialogContent className="max-w-lg p-0 gap-0 overflow-hidden rounded-2xl border-emerald-200/60 dark:border-emerald-900/40 bg-white dark:bg-gray-950 shadow-2xl">
+      <DialogContent showCloseButton={false} className="max-w-lg p-0 gap-0 overflow-hidden rounded-2xl border-emerald-200/60 dark:border-emerald-900/40 bg-white dark:bg-gray-950 shadow-2xl">
         {/* Hidden title for accessibility */}
         <DialogHeader className="sr-only">
           <VisuallyHidden>

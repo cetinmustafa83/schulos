@@ -2430,6 +2430,12 @@ model AISettings {
   aiMaxRequestsPerDay   Int      @default(50) // Student daily limit
   aiHelperMode          String   @default("guided") // guided, full, restricted
   aiSystemPrompt        String?  // Custom system prompt for AI chat
+  // SnapGen AI (Video generation)
+  snapgenEnabled       Boolean  @default(false)
+  snapgenApiKey        String?
+  // Perchance AI (Image generation)
+  perchanceEnabled     Boolean  @default(false)
+  perchanceApiKey      String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 

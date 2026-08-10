@@ -177,6 +177,7 @@ import SubjectsView from './subjects-view';
 import CounselingView from './counseling-view';
 import DisciplinaryView from './disciplinary-view';
 import AITestsView from './ai-tests-view';
+import AIStudioView from './ai-studio-view';
 import AIChatWidget from './ai-chat-widget';
 import VirtualCharacter from './virtual-character';
 import ParentPortalView from './parent-portal-view';
@@ -285,6 +286,8 @@ const navSections: NavSection[] = [
       { key: 'grade-analytics', icon: BarChart3, labelKey: 'nav.grade-analytics' },
       { key: 'reports', icon: FileText, labelKey: 'nav.reports' },
       { key: 'ai-tests', icon: Brain, labelKey: 'ai_tests.title' },
+      { key: 'ai-studio', icon: Sparkles, labelKey: 'nav.ai-studio' },
+      { key: 'ai-studio', icon: Sparkles, labelKey: 'nav.ai-studio' },
       { key: 'data-import-export', icon: Database, labelKey: 'nav.data-import-export' },
     ],
   },
@@ -321,6 +324,7 @@ const studentNavSections: NavSection[] = [
       { key: 'communication', icon: MessageSquare, labelKey: 'nav.communication' },
       { key: 'counseling', icon: Heart, labelKey: 'counseling.title' },
       { key: 'ai-tests', icon: Brain, labelKey: 'ai_tests.title' },
+      { key: 'ai-studio', icon: Sparkles, labelKey: 'nav.ai-studio' },
       { key: 'tablet-grading', icon: Tablet, labelKey: 'nav.tablet_grading' },
       { key: 'exam-calendar', icon: CalendarClock, labelKey: 'nav.exam_calendar' },
       { key: 'peer-assessment', icon: UsersRound, labelKey: 'nav.peer-assessment' },
@@ -509,6 +513,7 @@ function renderView(view: ViewName) {
     case 'counseling': return <CounselingView />;
     case 'disciplinary': return <DisciplinaryView />;
     case 'ai-tests': return <AITestsView />;
+    case 'ai-studio': return <AIStudioView />;
     case 'parent-portal': return <ParentPortalView />;
     case 'notification-center': return <NotificationCenterView />;
     case 'announcements': return <SchoolAnnouncementsView />;
