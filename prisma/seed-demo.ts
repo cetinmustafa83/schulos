@@ -20,11 +20,27 @@ async function main() {
     parallelism: 1,
   })
 
+  // Find any existing school (from seed.ts) or create one
+  let school = await prisma.school.findFirst()
+  if (!school) {
+    school = await prisma.school.create({
+      data: {
+        name: 'Demo Schule',
+        schoolType: 'GYMNASIUM',
+        country: 'DE',
+        timezone: 'Europe/Berlin',
+      },
+    })
+    console.log(`Created demo school: ${school.id}`)
+  } else {
+    console.log(`Using existing school: ${school.name} (${school.id})`)
+  }
+
   for (const user of demoUsers) {
     await prisma.user.upsert({
       where: { email: user.email },
-      update: { isDemo: true, passwordHash },
-      create: { ...user, passwordHash, locale: 'de', isDemo: true },
+      update: { isDemo: true, passwordHash, schoolId: school.id },
+      create: { ...user, passwordHash, locale: 'de', isDemo: true, schoolId: school.id },
     })
   }
 
@@ -33,7 +49,7 @@ async function main() {
   })
   if (seededCount !== demoUsers.length) throw new Error(`Expected ${demoUsers.length} demo accounts, found ${seededCount}`)
 
-  console.log(`Ensured ${seededCount} demo accounts.`)
+  console.log(`Ensured ${seededCount} demo accounts (schoolId: ${school.id}).`)
 }
 
 main()
