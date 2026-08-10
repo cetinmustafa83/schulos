@@ -8,25 +8,31 @@ export const STUDENT_MANAGER_ROLES: readonly AppRole[] = ['SCHOOL_ADMIN', 'SUPER
 
 const parentViews: ViewName[] = [
   'dashboard', 'parent-portal', 'calendar', 'communication', 'illness',
-  'notification-center', 'announcements',
+  'notification-center', 'announcements', 'settings',
 ];
 
 const studentViews: ViewName[] = [
   'dashboard', 'student-portal', 'calendar', 'communication', 'illness',
-  'notification-center',
+  'notification-center', 'notebooks', 'homework', 'attendance', 'grading',
+  'flower', 'subjects', 'resources', 'competitions', 'portfolio', 'settings',
 ];
 
 const teacherViews: ViewName[] = [
   'dashboard', 'classes', 'competencies', 'progress', 'flower', 'assessments', 'grading',
   'reports', 'student-detail', 'matrix', 'attendance', 'calendar', 'lesson-plans',
   'behavior', 'coverage', 'rubrics', 'comments', 'homework', 'timetable', 'resources',
-  'illness', 'communication', 'notification-center', 'tablet-grading', 'exam-calendar',
-  'seating-chart', 'report-cards',
+  'illness', 'communication', 'notification-center',
+  'seating-chart', 'report-cards', 'notebooks', 'drawing', 'portfolio',
+  'peer-assessment', 'subjects', 'competitions', 'parents',
+  'announcements', 'school-library', 'school-transport',
+  'counseling', 'student-wellness', 'student-career',
+  'ai-tests', 'ai-studio', 'settings', 'data-import-export',
 ];
 
 const vicePrincipalViews: ViewName[] = [
   ...teacherViews,
   'analytics', 'disciplinary', 'school-transport', 'substitute-teacher',
+  'districts', 'school-newsletter',
 ];
 
 export function hasRoleAccess(role: string | undefined, allowedRoles: readonly AppRole[]): boolean {

@@ -99,8 +99,9 @@ export function ProfessionalCalendar({
   const dateLocale = locale === 'de' ? deLocale : enLocale;
 
   // Fetch events from backend
+  const monthParam = format(currentDate, 'yyyy-MM');
   const { data: backendEvents, isLoading } = useApiGet(
-    `/api/v1/calendar/events?startDate=${format(startOfMonth(currentDate), 'yyyy-MM-dd')}&endDate=${format(endOfMonth(currentDate), 'yyyy-MM-dd')}`,
+    `/api/calendar-events?month=${monthParam}`,
     { revalidateOnFocus: true }
   );
 

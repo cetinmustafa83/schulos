@@ -100,15 +100,30 @@ export function UnifiedGradingPanel({
   if (studentId) queryParams.append('studentId', studentId);
   
   const { data: backendGrades, isLoading, mutate } = useApiGet(
-    `/api/v1/grades${queryParams.toString() ? '?' + queryParams.toString() : ''}`,
+    `/api/assessments${queryParams.toString() ? '?' + queryParams.toString() : ''}`,
     { revalidateOnFocus: true }
   );
 
   // Update local grades when backend data changes
   React.useEffect(() => {
     if (backendGrades) {
-      setGrades(backendGrades);
-      applyFilters(backendGrades);
+      // Transform assessments API response to Grade format
+      const rawData = Array.isArray(backendGrades) ? backendGrades : [];
+      const transformed: Grade[] = rawData.map((item: any) => ({
+        id: item.id,
+        studentId: item.studentId || item.id,
+        studentName: item.studentName || (item.student ? `${item.student.firstName} ${item.student.lastName}` : '—'),
+        subject: typeof item.subject === 'string' ? item.subject : (item.subject?.name || item.subjectId || '—'),
+        assessment: item.assessment || item.title || item.name || '—',
+        score: typeof item.score === 'number' ? item.score : (item.maxScore ?? 0),
+        maxScore: item.maxScore ?? 100,
+        weight: item.weight,
+        comment: item.comment || item.note || '',
+        gradedAt: item.gradedAt || item.date || item.createdAt,
+        status: item.status || (item.score != null ? 'graded' : 'pending'),
+      }));
+      setGrades(transformed);
+      applyFilters(transformed);
     }
   }, [backendGrades]);
 
@@ -173,7 +188,7 @@ export function UnifiedGradingPanel({
         await onGradeSubmit(gradesToSubmit);
       } else {
         // Use API
-        await fetch('/api/v1/grades/submit', {
+        await fetch('/api/assessments/bulk-results', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(gradesToSubmit),
@@ -204,7 +219,7 @@ export function UnifiedGradingPanel({
   // Handle grade deletion
   const handleDeleteGrade = useCallback(async (gradeId: string) => {
     try {
-      await fetch(`/api/v1/grades/${gradeId}`, { method: 'DELETE' });
+      await fetch(`/api/assessments/${gradeId}/results`, { method: 'DELETE' });
       setGrades((prev) => prev.filter((g) => g.id !== gradeId));
       setSelectedGrade(null);
       toast.success('Grade deleted');
@@ -286,7 +301,13 @@ export function UnifiedGradingPanel({
                 </tr>
               </thead>
               <tbody>
-                {filteredGrades.map((grade) => (
+                {filteredGrades.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                      Keine Noten vorhanden. Wählen Sie eine Klasse aus oder erstellen Sie eine Leistungsüberprüfung.
+                    </td>
+                  </tr>
+                ) : filteredGrades.map((grade) => (
                   <tr key={grade.id} className="border-b hover:bg-muted/50 transition-colors">
                     <td className="py-2 px-3">{grade.studentName}</td>
                     <td className="py-2 px-3">{grade.subject}</td>

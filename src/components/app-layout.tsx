@@ -246,7 +246,6 @@ const navSections: NavSection[] = [
       { key: 'rubrics', icon: Ruler, labelKey: 'nav.rubrics' },
       { key: 'comments', icon: MessageSquareText, labelKey: 'nav.comments' },
       { key: 'peer-assessment', icon: UsersRound, labelKey: 'nav.peer-assessment' },
-      { key: 'tablet-grading', icon: Tablet, labelKey: 'nav.tablet_grading' },
       { key: 'seating-chart', icon: LayoutGridIcon, labelKey: 'nav.seating_chart' },
       { key: 'subjects', icon: BookOpen, labelKey: 'nav.subjects' },
       { key: 'competitions', icon: Trophy, labelKey: 'nav.competitions' },
@@ -259,7 +258,6 @@ const navSections: NavSection[] = [
       { key: 'calendar', icon: CalendarIconNav, labelKey: 'nav.calendar' },
       { key: 'communication', icon: MessageSquare, labelKey: 'nav.communication' },
       { key: 'announcements', icon: Megaphone, labelKey: 'nav.announcements' },
-      { key: 'school-events', icon: PartyPopper, labelKey: 'nav.school-events' },
       { key: 'school-newsletter', icon: Newspaper, labelKey: 'nav.school-newsletter' },
       { key: 'school-library', icon: LibraryIcon, labelKey: 'nav.school_library' },
       { key: 'school-transport', icon: Bus, labelKey: 'nav.school-transport' },
@@ -271,7 +269,6 @@ const navSections: NavSection[] = [
       { key: 'illness', icon: Heart, labelKey: 'nav.illness' },
       { key: 'substitute-teacher', icon: UserCheck, labelKey: 'nav.substitute-teacher' },
       { key: 'timetable', icon: ClockIcon, labelKey: 'nav.timetable' },
-      { key: 'exam-calendar', icon: CalendarClock, labelKey: 'nav.exam_calendar' },
       { key: 'parents', icon: Mail, labelKey: 'nav.parents' },
     ],
   },
@@ -323,8 +320,6 @@ const studentNavSections: NavSection[] = [
       { key: 'communication', icon: MessageSquare, labelKey: 'nav.communication' },
       { key: 'counseling', icon: Heart, labelKey: 'counseling.title' },
       { key: 'ai-tests', icon: Brain, labelKey: 'ai_tests.title' },
-      { key: 'tablet-grading', icon: Tablet, labelKey: 'nav.tablet_grading' },
-      { key: 'exam-calendar', icon: CalendarClock, labelKey: 'nav.exam_calendar' },
       { key: 'peer-assessment', icon: UsersRound, labelKey: 'nav.peer-assessment' },
       { key: 'report-cards', icon: FileText, labelKey: 'nav.report_cards' },
       { key: 'seating-chart', icon: LayoutGridIcon, labelKey: 'nav.seating_chart' },
@@ -334,7 +329,6 @@ const studentNavSections: NavSection[] = [
       { key: 'student-career', icon: Compass, labelKey: 'nav.student-career' },
       { key: 'resources', icon: FolderOpen, labelKey: 'nav.resources' },
       { key: 'school-library', icon: LibraryIcon, labelKey: 'nav.school_library' },
-      { key: 'school-events', icon: PartyPopper, labelKey: 'nav.school-events' },
       { key: 'school-newsletter', icon: Newspaper, labelKey: 'nav.school-newsletter' },
       { key: 'school-transport', icon: Bus, labelKey: 'nav.school-transport' },
       { key: 'substitute-teacher', icon: UserCheck, labelKey: 'nav.substitute-teacher' },
@@ -367,7 +361,6 @@ const parentNavSections: NavSection[] = [
       { key: 'peer-assessment', icon: UsersRound, labelKey: 'nav.peer-assessment' },
       { key: 'report-cards', icon: FileText, labelKey: 'nav.report_cards' },
       { key: 'school-library', icon: LibraryIcon, labelKey: 'nav.school_library' },
-      { key: 'school-events', icon: PartyPopper, labelKey: 'nav.school-events' },
       { key: 'school-newsletter', icon: Newspaper, labelKey: 'nav.school-newsletter' },
       { key: 'school-transport', icon: Bus, labelKey: 'nav.school-transport' },
       { key: 'substitute-teacher', icon: UserCheck, labelKey: 'nav.substitute-teacher' },
@@ -515,8 +508,6 @@ function renderView(view: ViewName) {
     case 'parent-portal': return <ParentPortalView />;
     case 'notification-center': return <NotificationCenterView />;
     case 'announcements': return <SchoolAnnouncementsView />;
-    case 'tablet-grading': return <UnifiedGradingPanel mode="teacher" variant="tablet" />;
-    case 'exam-calendar': return <ProfessionalCalendar variant="month" />;
     case 'peer-assessment': return <PeerAssessmentView />;
     case 'grade-analytics': return <UnifiedGradingPanel mode="teacher" />;
     case 'student-achievements': return <StudentAchievementsView />;
@@ -527,7 +518,6 @@ function renderView(view: ViewName) {
     case 'student-wellness': return <StudentWellnessView />;
     case 'student-career': return <StudentCareerView />;
     case 'data-import-export': return <DataImportExportView />;
-    case 'school-events': return <ProfessionalCalendar variant="month" />;
     case 'substitute-teacher': return <SubstituteTeacherView />;
     case 'school-newsletter': return <SchoolNewsletterView />;
     case 'school-transport': return <SchoolTransportView />;
