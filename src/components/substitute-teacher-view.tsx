@@ -1732,7 +1732,7 @@ export default function SubstituteTeacherView() {
                     .filter((s) => s.isActive)
                     .map((s) => (
                       <SelectItem key={s.id} value={s.id}>
-                        {s.firstName} {s.lastName} {s.rating > 0 ? `(★ ${s.rating.toFixed(1)})` : ''}
+                        {s.firstName} {s.lastName} {s.rating > 0 ? `(${s.rating.toFixed(1)} stars)` : ''}
                       </SelectItem>
                     ))}
                 </SelectContent>

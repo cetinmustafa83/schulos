@@ -479,7 +479,7 @@ export function ComplianceWizard({ schoolId, onComplete }: ComplianceWizardProps
                 />
                 {state.dpiaModules[module.id]?.documentUrl && (
                   <p className="text-sm text-emerald-600 mt-2">
-                    ✓ {state.dpiaModules[module.id].documentUrl}
+                    {state.dpiaModules[module.id].documentUrl}
                   </p>
                 )}
               </div>
@@ -510,7 +510,7 @@ export function ComplianceWizard({ schoolId, onComplete }: ComplianceWizardProps
           <CardContent className="space-y-4">
             <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
               <p className="text-sm text-emerald-800">
-                ✓ All compliance requirements have been configured. Your school is now ready for
+                All compliance requirements have been configured. Your school is now ready for
                 production use.
               </p>
             </div>

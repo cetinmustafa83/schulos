@@ -35,13 +35,13 @@ export const getPriorityColor = (priority: Priority): string => {
  */
 export const getMessageTypeIcon = (type: MessageType): string => {
   const icons: Record<MessageType, string> = {
-    emergency: '🚨',
-    notification: '📢',
-    schedule: '📅',
-    announcement: '📣',
-    alert: '⚠️',
+    emergency: 'alert-circle',
+    notification: 'megaphone',
+    schedule: 'calendar',
+    announcement: 'megaphone',
+    alert: 'alert-triangle',
   };
-  return icons[type] || '📢';
+  return icons[type] || 'megaphone';
 };
 
 /**

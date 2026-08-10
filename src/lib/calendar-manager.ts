@@ -189,16 +189,16 @@ export class CalendarManager {
    */
   static getIconForType(type: CalendarEventType): string {
     const icons: Record<CalendarEventType, string> = {
-      exam: '📝',
-      lesson: '📚',
-      holiday: '🎉',
-      term: '📅',
-      school_event: '🏫',
-      assignment: '✏️',
-      illness: '🤒',
-      custom: '📌',
+      exam: 'FileText',
+      lesson: 'BookOpen',
+      holiday: 'PartyPopper',
+      term: 'Calendar',
+      school_event: 'School',
+      assignment: 'PenLine',
+      illness: 'Heart',
+      custom: 'Pin',
     };
-    return icons[type] || '📌';
+    return icons[type] || 'Pin';
   }
 
   /**

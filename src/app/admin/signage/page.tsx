@@ -184,7 +184,7 @@ export default function SignageAdminPage() {
                       label: 'Sound',
                       render: (_, row) => (
                         <span className={row.soundAlert ? 'text-amber-600' : 'text-gray-400'}>
-                          {row.soundAlert ? '🔊' : '🔇'}
+                          {row.soundAlert ? 'volume-up' : 'volume-off'}
                         </span>
                       ),
                     },

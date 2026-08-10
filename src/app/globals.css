@@ -3951,3 +3951,57 @@
     box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.3);
   }
 }
+
+/* ─── Comprehensive prefers-reduced-motion support ────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Disable framer-motion animations */
+  [data-framer-motion] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ─── Touch target enforcement for tablet/iPad ───────────────────── */
+@media (pointer: coarse) {
+  /* Ensure all buttons have minimum 44px touch target */
+  button:not(.min-touch-keep),
+  [role="button"],
+  [role="tab"],
+  a.btn,
+  .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Icon-only buttons get extra padding */
+  button:has(> svg:only-child) {
+    padding: 0.625rem;
+  }
+
+  /* Larger tap areas for list items */
+  [role="option"],
+  [role="menuitem"] {
+    min-height: 44px;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  /* Prevent text selection on double-tap */
+  button,
+  [role="button"],
+  nav a {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+  }
+}

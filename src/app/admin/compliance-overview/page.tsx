@@ -157,7 +157,7 @@ export default function ComplianceDashboard() {
                     {dpia.moduleScope}
                   </span>
                   <span className="text-xs text-slate-500">
-                    {dpia.approvedAt ? "✓ Approved" : "Pending review"}
+                    {dpia.approvedAt ? "CheckCircle Approved" : "Pending review"}
                   </span>
                 </div>
               ))}

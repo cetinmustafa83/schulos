@@ -2496,7 +2496,7 @@ export default function BehaviorTrackingView() {
                 <Input
                   value={categoryForm.icon}
                   onChange={(e) => setCategoryForm({ ...categoryForm, icon: e.target.value })}
-                  placeholder="🤝"
+                  placeholder="handshake"
                   className="mt-1"
                   maxLength={4}
                 />
