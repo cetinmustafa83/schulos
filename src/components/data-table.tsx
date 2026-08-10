@@ -103,7 +103,7 @@ export function DataTable<T extends Record<string, any>>({
         <div className="relative">
           <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
           <Input
-            placeholder="Search..."
+            placeholder="Suchen..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -191,7 +191,7 @@ export function DataTable<T extends Record<string, any>>({
       </div>
 
       {sortedData.length === 0 && (
-        <div className="text-center py-8 text-gray-500">No data found</div>
+        <div className="text-center py-8 text-gray-500">Keine Daten gefunden</div>
       )}
     </div>
   );

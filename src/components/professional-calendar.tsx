@@ -619,18 +619,18 @@ function EventCreatorDialog({
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label htmlFor="type">Type</Label>
+              <Label htmlFor="type">Typ</Label>
               <select
                 id="type"
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as CalendarEventType })}
                 className="w-full px-3 py-2 border rounded-md"
               >
-                <option value="exam">Exam</option>
-                <option value="lesson">Lesson</option>
-                <option value="assignment">Assignment</option>
+                <option value="exam">Prüfung</option>
+                <option value="lesson">Unterricht</option>
+                <option value="assignment">Hausaufgabe</option>
                 <option value="school_event">School Event</option>
-                <option value="custom">Custom</option>
+                <option value="custom">Sonstiges</option>
               </select>
             </div>
 

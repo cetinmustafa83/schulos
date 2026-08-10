@@ -2320,7 +2320,7 @@ export default function SubjectsView() {
               />
             </div>
             <div>
-              <Label>Icon</Label>
+              <Label>Symbol</Label>
               <Select
                 value={categoryForm.icon}
                 onValueChange={(v) => setCategoryForm({ ...categoryForm, icon: v })}
@@ -2392,11 +2392,11 @@ export default function SubjectsView() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="topic">Topic</SelectItem>
-                    <SelectItem value="exercise">Exercise</SelectItem>
-                    <SelectItem value="lesson">Lesson</SelectItem>
+                    <SelectItem value="topic">Thema</SelectItem>
+                    <SelectItem value="exercise">Übung</SelectItem>
+                    <SelectItem value="lesson">Lektion</SelectItem>
                     <SelectItem value="quiz">Quiz</SelectItem>
-                    <SelectItem value="vocabulary">Vocabulary</SelectItem>
+                    <SelectItem value="vocabulary">Wortschatz</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -2418,7 +2418,7 @@ export default function SubjectsView() {
               </div>
             </div>
             <div>
-              <Label>Icon</Label>
+              <Label>Symbol</Label>
               <Select
                 value={contentForm.icon}
                 onValueChange={(v) => setContentForm({ ...contentForm, icon: v })}
@@ -2446,7 +2446,7 @@ export default function SubjectsView() {
                   checked={contentForm.isPublic}
                   onCheckedChange={(v) => setContentForm({ ...contentForm, isPublic: v })}
                 />
-                <Label>Public</Label>
+                <Label>Öffentlich</Label>
               </div>
             </div>
           </div>
@@ -2481,9 +2481,9 @@ export default function SubjectsView() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="edit">Edit</SelectItem>
-                  <SelectItem value="add">Add</SelectItem>
-                  <SelectItem value="delete">Delete</SelectItem>
+                  <SelectItem value="edit">Bearbeiten</SelectItem>
+                  <SelectItem value="add">Hinzufügen</SelectItem>
+                  <SelectItem value="delete">Löschen</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -1550,7 +1550,7 @@ export default function CompetitionsView() {
                     }}
                   >
                     <SelectTrigger className="min-h-[44px]">
-                      <SelectValue placeholder="Select a competition" />
+                      <SelectValue placeholder="Wettbewerb auswählen" />
                     </SelectTrigger>
                     <SelectContent>
                       {activeCompetitions.map((comp) => (
@@ -2329,7 +2329,7 @@ export default function CompetitionsView() {
               <Input
                 value={createForm.title}
                 onChange={(e) => setCreateForm((f) => ({ ...f, title: e.target.value }))}
-                placeholder="Competition title"
+                placeholder="Wettbewerbstitel"
                 className="mt-1 min-h-[44px]"
               />
             </div>
@@ -2339,7 +2339,7 @@ export default function CompetitionsView() {
               <Textarea
                 value={createForm.description}
                 onChange={(e) => setCreateForm((f) => ({ ...f, description: e.target.value }))}
-                placeholder="Describe the competition..."
+                placeholder="Beschreiben Sie den Wettbewerb..."
                 className="mt-1 min-h-[80px]"
                 rows={3}
               />
@@ -2417,7 +2417,7 @@ export default function CompetitionsView() {
                   type="number"
                   value={createForm.maxParticipants}
                   onChange={(e) => setCreateForm((f) => ({ ...f, maxParticipants: e.target.value }))}
-                  placeholder="Unlimited"
+                  placeholder="Unbegrenzt"
                   className="mt-1 min-h-[44px]"
                 />
               </div>
@@ -2445,7 +2445,7 @@ export default function CompetitionsView() {
               <Textarea
                 value={createForm.rules}
                 onChange={(e) => setCreateForm((f) => ({ ...f, rules: e.target.value }))}
-                placeholder="Competition rules and guidelines..."
+                placeholder="Regeln und Richtlinien..."
                 className="mt-1 min-h-[100px]"
                 rows={4}
               />
@@ -2509,7 +2509,7 @@ export default function CompetitionsView() {
               <Input
                 value={rewardForm.name}
                 onChange={(e) => setRewardForm((f) => ({ ...f, name: e.target.value }))}
-                placeholder="Reward name"
+                placeholder="Belohnungsname"
                 className="mt-1 min-h-[44px]"
               />
             </div>
@@ -2519,7 +2519,7 @@ export default function CompetitionsView() {
               <Textarea
                 value={rewardForm.description}
                 onChange={(e) => setRewardForm((f) => ({ ...f, description: e.target.value }))}
-                placeholder="Reward description..."
+                placeholder="Belohnungsbeschreibung..."
                 className="mt-1 min-h-[80px]"
                 rows={3}
               />
@@ -2565,7 +2565,7 @@ export default function CompetitionsView() {
               <Input
                 value={rewardForm.rewardValue}
                 onChange={(e) => setRewardForm((f) => ({ ...f, rewardValue: e.target.value }))}
-                placeholder="Promo code or value"
+                placeholder="Promo-Code oder Wert"
                 className="mt-1 min-h-[44px]"
               />
             </div>
@@ -2586,7 +2586,7 @@ export default function CompetitionsView() {
                   type="number"
                   value={rewardForm.rankRequirement}
                   onChange={(e) => setRewardForm((f) => ({ ...f, rankRequirement: e.target.value }))}
-                  placeholder="Any"
+                  placeholder="Alle"
                   className="mt-1 min-h-[44px]"
                 />
               </div>
@@ -2596,7 +2596,7 @@ export default function CompetitionsView() {
                   type="number"
                   value={rewardForm.pointsRequired}
                   onChange={(e) => setRewardForm((f) => ({ ...f, pointsRequired: e.target.value }))}
-                  placeholder="Any"
+                  placeholder="Alle"
                   className="mt-1 min-h-[44px]"
                 />
               </div>
@@ -2752,12 +2752,12 @@ export default function CompetitionsView() {
                 />
               </div>
               <div>
-                <Label>Stock</Label>
+                <Label>Bestand</Label>
                 <Input
                   type="number"
                   value={newRewardForm.stock}
                   onChange={(e) => setNewRewardForm((f) => ({ ...f, stock: e.target.value }))}
-                  placeholder="Unlimited"
+                  placeholder="Unbegrenzt"
                   className="mt-1 min-h-[44px]"
                 />
               </div>

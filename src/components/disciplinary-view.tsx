@@ -371,7 +371,7 @@ export default function DisciplinaryView() {
                   </div>
                 </motion.div>
                 <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">{t('disciplinary.no_cases')}</p>
-                <p className="text-gray-400 text-sm mt-1">All clear</p>
+                <p className="text-gray-400 text-sm mt-1">Alles in Ordnung</p>
               </CardContent>
             </Card>
           ) : (

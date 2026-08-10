@@ -3930,7 +3930,7 @@ export default function SettingsView() {
                         </div>
                         <div className="text-center">
                           <p className="text-xl font-bold text-amber-600 dark:text-amber-400">{importResult.skipped}</p>
-                          <p className="text-[10px] text-gray-500 dark:text-gray-400">Skipped</p>
+                          <p className="text-[10px] text-gray-500 dark:text-gray-400">Übersprungen</p>
                         </div>
                         <div className="text-center">
                           <p className="text-xl font-bold text-red-600 dark:text-red-400">{importResult.errorCount}</p>

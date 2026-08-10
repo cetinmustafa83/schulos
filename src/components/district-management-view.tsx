@@ -894,7 +894,7 @@ export default function DistrictManagementView() {
                 {activityLog.length === 0 ? (
                   <div className="text-center py-8">
                     <Activity className="h-12 w-12 text-emerald-300 dark:text-emerald-700 mx-auto mb-3" />
-                    <p className="text-gray-500 dark:text-gray-400">No recent activity</p>
+                    <p className="text-gray-500 dark:text-gray-400">Keine aktuellen Aktivitäten</p>
                   </div>
                 ) : (
                   <ScrollArea className="max-h-96">

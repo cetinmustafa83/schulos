@@ -340,13 +340,13 @@ function ReportCard({
 
   const getStatusBadge = () => {
     if (report.adminApprovalStatus === 'approved') {
-      return <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800"><CheckCircle2 className="h-3 w-3 mr-1" />Approved and on calendar</Badge>;
+      return <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800"><CheckCircle2 className="h-3 w-3 mr-1" />Genehmigt und im Kalender</Badge>;
     }
     if (report.adminApprovalStatus === 'rejected') {
-      return <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/30 dark:text-rose-300 dark:border-rose-800"><XCircle className="h-3 w-3 mr-1" />Rejected by administration</Badge>;
+      return <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/30 dark:text-rose-300 dark:border-rose-800"><XCircle className="h-3 w-3 mr-1" />Von der Verwaltung abgelehnt</Badge>;
     }
     if (report.parentApprovalStatus === 'approved') {
-      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800"><Clock className="h-3 w-3 mr-1" />Awaiting administration</Badge>;
+      return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800"><Clock className="h-3 w-3 mr-1" />Wartet auf Verwaltung</Badge>;
     }
     switch (report.parentApprovalStatus) {
       case 'pending':

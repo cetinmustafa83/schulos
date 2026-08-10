@@ -245,7 +245,7 @@ export function ComplianceWizard({ schoolId, onComplete }: ComplianceWizardProps
                   onChange={(e) =>
                     setState((prev) => ({ ...prev, dpoName: e.target.value }))
                   }
-                  placeholder="Full name"
+                  placeholder="Vollständiger Name"
                 />
               </div>
               <div>
@@ -305,7 +305,7 @@ export function ComplianceWizard({ schoolId, onComplete }: ComplianceWizardProps
                 setState((prev) => ({ ...prev, bundesland: value }))
               }>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select state..." />
+                  <SelectValue placeholder="Bundesland auswählen..." />
                 </SelectTrigger>
                 <SelectContent>
                   {BUNDESLANDS.map((land) => (

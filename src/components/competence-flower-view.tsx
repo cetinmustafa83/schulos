@@ -512,7 +512,7 @@ export default function CompetenceFlowerView() {
                     <div className="flex items-center gap-3 pr-4 border-r border-gray-200/60 dark:border-gray-700/40">
                       <div className="w-12 h-12 rounded-xl shadow-md ring-2 ring-white dark:ring-gray-800" style={{ backgroundColor: primaryColor, boxShadow: `0 4px 12px ${primaryColor}30` }} />
                       <div>
-                        <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-500/70 dark:text-gray-400/60">Active</p>
+                        <p className="text-[10px] uppercase tracking-wider font-semibold text-gray-500/70 dark:text-gray-400/60">Aktiv</p>
                         <p className="text-xs font-mono text-gray-700 dark:text-gray-300">{primaryColor}</p>
                       </div>
                     </div>
