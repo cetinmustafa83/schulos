@@ -126,7 +126,7 @@ import { t } from '@/lib/i18n';
 import { fetchSchoolYears, fetchStudents, fetchClasses, fetchDBNotifications, markAllNotificationsRead, markSingleNotificationRead, type SchoolYear, type Student, type ClassGroup, type DBNotification, type DBNotificationData } from '@/lib/api';
 import { apiGet } from '@/lib/api';
 import type { School as SchoolType } from '@/lib/api';
-import OnboardingTour, { isOnboardingCompleted } from '@/components/onboarding-tour';
+import OnboardingTour, { isOnboardingCompleted, isDontShowAgain } from '@/components/onboarding-tour';
 import KeyboardShortcutsDialog from '@/components/keyboard-shortcuts-dialog';
 import {
   CommandDialog,
@@ -755,10 +755,11 @@ export default function AppLayout() {
     setCurrentView('classes');
   }, [setCurrentClass, setCurrentView]);
 
-  // Check onboarding status on mount
+  // Check onboarding status on mount - respect "don't show again" preference
   useEffect(() => {
-    if (!isOnboardingCompleted()) {
-      setOnboardingOpen(true);
+    if (!isOnboardingCompleted() && !isDontShowAgain()) {
+      const timer = setTimeout(() => setOnboardingOpen(true), 1000);
+      return () => clearTimeout(timer);
     }
   }, []);
 

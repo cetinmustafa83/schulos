@@ -94,10 +94,27 @@ export function PWAInstallPrompt() {
       return;
     }
 
+    // Don't show PWA prompt in development
+    if (process.env.NODE_ENV === 'development') {
+      return;
+    }
+
+    // Check if user dismissed recently (within 7 days)
+    try {
+      const dismissedAt = localStorage.getItem('pwa_prompt_dismissed');
+      if (dismissedAt) {
+        const daysSince = (Date.now() - parseInt(dismissedAt)) / (1000 * 60 * 60 * 24);
+        if (daysSince < 7) return;
+      }
+    } catch {
+      // ignore
+    }
+
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setShowInstall(true);
+      // Delay showing by 30 seconds to avoid interrupting the user
+      setTimeout(() => setShowInstall(true), 30000);
     };
 
     const handleAppInstalled = () => {
@@ -155,7 +172,10 @@ export function PWAInstallPrompt() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowInstall(false)}
+              onClick={() => {
+                setShowInstall(false);
+                try { localStorage.setItem('pwa_prompt_dismissed', String(Date.now())); } catch {}
+              }}
               className="h-8 text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             >
               {t('action.cancel')}

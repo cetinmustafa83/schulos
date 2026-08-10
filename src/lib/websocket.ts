@@ -73,26 +73,23 @@ function connectSocket(userId: string, userName: string, schoolId: string, role:
   const socket = io('/?XTransformPort=3003', {
     transports: ['websocket', 'polling'],
     reconnection: true,
-    reconnectionDelay: 1000,
-    reconnectionAttempts: 10,
-    timeout: 10000,
+    reconnectionDelay: 5000,
+    reconnectionAttempts: 3,
+    timeout: 15000,
   });
 
   socket.on('connect', () => {
-    console.log('[CT-WS] Connected to WebSocket service');
     socketConnected = true;
-    // Authenticate
     socket.emit('auth', { userId, userName, schoolId, role });
   });
 
   socket.on('disconnect', () => {
-    console.log('[CT-WS] Disconnected from WebSocket service');
     socketConnected = false;
   });
 
-  socket.on('connect_error', (err) => {
-    console.warn('[CT-WS] Connection error:', err.message);
+  socket.on('connect_error', () => {
     socketConnected = false;
+    // Silently fail - WebSocket is optional (real-time collaboration only)
   });
 
   socketInstance = socket;
