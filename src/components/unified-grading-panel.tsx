@@ -18,6 +18,7 @@ import {
   Smartphone,
   Monitor,
   Table as TableIcon,
+  List as ListIcon,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -411,6 +412,91 @@ export function UnifiedGradingPanel({
     </div>
   );
 
+  // Analytics view (replaces the removed grade-analytics nav entry)
+  const renderAnalyticsView = () => {
+    const avgScore = grades.length > 0
+      ? (grades.reduce((s, g) => s + (g.score / g.maxScore) * 100, 0) / grades.length).toFixed(1)
+      : '0';
+    const passRate = grades.length > 0
+      ? Math.round((grades.filter(g => (g.score / g.maxScore) >= 0.5).length / grades.length) * 100)
+      : 0;
+
+    // Distribution by subject
+    const subjectStats: Record<string, { count: number; avg: number }> = {};
+    grades.forEach(g => {
+      if (!subjectStats[g.subject]) subjectStats[g.subject] = { count: 0, avg: 0 };
+      subjectStats[g.subject].count++;
+      subjectStats[g.subject].avg += (g.score / g.maxScore) * 100;
+    });
+    Object.keys(subjectStats).forEach(s => {
+      subjectStats[s].avg = Math.round(subjectStats[s].avg / subjectStats[s].count);
+    });
+
+    return (
+      <div className="space-y-6">
+        {/* Summary cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Durchschnitt</p><p className="text-2xl font-bold text-emerald-600">{avgScore}%</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Bestehensquote</p><p className="text-2xl font-bold text-sky-600">{passRate}%</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Noten gesamt</p><p className="text-2xl font-bold">{grades.length}</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Fächer</p><p className="text-2xl font-bold">{Object.keys(subjectStats).length}</p></CardContent></Card>
+        </div>
+
+        {/* Subject breakdown */}
+        <Card>
+          <CardHeader><CardTitle className="text-base">Noten nach Fach</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {Object.entries(subjectStats).length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">Keine Daten verfügbar</p>
+            ) : (
+              Object.entries(subjectStats).map(([subject, data]) => (
+                <div key={subject} className="flex items-center gap-3">
+                  <div className="w-32 text-sm font-medium truncate">{subject}</div>
+                  <div className="flex-1 h-6 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 flex items-center justify-end pr-2" style={{ width: `${data.avg}%` }}>
+                      <span className="text-[10px] font-bold text-white">{data.avg}%</span>
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground w-16 text-right">{data.count} Noten</div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Grade distribution */}
+        <Card>
+          <CardHeader><CardTitle className="text-base">Notenverteilung</CardTitle></CardHeader>
+          <CardContent>
+            <div className="flex items-end gap-2 h-40">
+              {[
+                { label: 'unter 50%', min: 0, max: 50, color: 'bg-rose-500' },
+                { label: '50-60%', min: 50, max: 60, color: 'bg-orange-500' },
+                { label: '60-75%', min: 60, max: 75, color: 'bg-amber-500' },
+                { label: '75-90%', min: 75, max: 90, color: 'bg-sky-500' },
+                { label: 'ueber 90%', min: 90, max: 101, color: 'bg-emerald-500' },
+              ].map(bucket => {
+                const count = grades.filter(g => {
+                  const pct = (g.score / g.maxScore) * 100;
+                  return pct >= bucket.min && pct < bucket.max;
+                }).length;
+                const max = Math.max(grades.length, 1);
+                const height = max > 0 ? (count / max) * 100 : 0;
+                return (
+                  <div key={bucket.label} className="flex-1 flex flex-col items-center gap-1">
+                    <span className="text-xs font-bold">{count}</span>
+                    <div className={`w-full ${bucket.color} rounded-t transition-all`} style={{ height: `${height}%`, minHeight: count > 0 ? '8px' : '0' }} />
+                    <span className="text-[10px] text-muted-foreground">{bucket.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -478,6 +564,7 @@ export function UnifiedGradingPanel({
               variant={viewType === 'grid' ? 'default' : 'ghost'}
               onClick={() => setViewType('grid')}
               className="flex-1"
+              title="Tabelle"
             >
               <TableIcon className="h-4 w-4" />
             </Button>
@@ -486,8 +573,18 @@ export function UnifiedGradingPanel({
               variant={viewType === 'list' ? 'default' : 'ghost'}
               onClick={() => setViewType('list')}
               className="flex-1"
+              title="Liste"
             >
-              <BarChart3 className="h-4 w-4" />
+              <ListIcon className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant={viewType === 'analytics' ? 'default' : 'ghost'}
+              onClick={() => setViewType('analytics')}
+              className="flex-1"
+              title="Analyse"
+            >
+              <TrendingUp className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -497,6 +594,7 @@ export function UnifiedGradingPanel({
       <AnimatePresence mode="wait">
         {viewType === 'grid' && renderDesktopView()}
         {viewType === 'list' && renderListView()}
+        {viewType === 'analytics' && renderAnalyticsView()}
       </AnimatePresence>
 
       {/* Edit grade dialog */}

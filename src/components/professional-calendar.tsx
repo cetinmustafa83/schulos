@@ -94,6 +94,7 @@ export function ProfessionalCalendar({
   const [isCreating, setIsCreating] = useState(false);
   const [draggedEvent, setDraggedEvent] = useState<CalendarEvent | null>(null);
   const [view, setView] = useState<'month' | 'week' | 'day' | 'agenda'>(variant);
+  const [eventFilter, setEventFilter] = useState<'all' | 'exams' | 'events' | 'holidays'>('all');
   const contextMenuRef = useRef<{ x: number; y: number } | null>(null);
   
   const dateLocale = locale === 'de' ? deLocale : enLocale;
@@ -132,9 +133,21 @@ export function ProfessionalCalendar({
   }, [events, monthStart, monthEnd]);
 
   // Get events for a specific date
+  // Filtered events based on the active filter tab
+  const filteredEvents = useMemo(() => {
+    if (eventFilter === 'all') return events;
+    const filterMap: Record<string, string[]> = {
+      exams: ['EXAM', 'TEST', 'ASSESSMENT'],
+      events: ['EVENT', 'ACTIVITY', 'MEETING', 'TRIP'],
+      holidays: ['HOLIDAY', 'BREAK'],
+    };
+    const types = filterMap[eventFilter] || [];
+    return events.filter(e => types.includes(e.type?.toUpperCase() || ''));
+  }, [events, eventFilter]);
+
   const getEventsForDate = useCallback((date: Date): CalendarEvent[] => {
-    return CalendarManager.getEventsForDate(events, date);
-  }, [events]);
+    return CalendarManager.getEventsForDate(filteredEvents, date);
+  }, [filteredEvents]);
 
   // Handle event creation
   const handleCreateEvent = useCallback(
@@ -342,13 +355,25 @@ export function ProfessionalCalendar({
         </div>
 
         {/* View tabs */}
-        <Tabs value={view} onValueChange={(v) => setView(v as any)}>
-          <TabsList>
-            <TabsTrigger value="month">Month</TabsTrigger>
-            <TabsTrigger value="week">Week</TabsTrigger>
-            <TabsTrigger value="agenda">Agenda</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Tabs value={view} onValueChange={(v) => setView(v as any)}>
+            <TabsList>
+              <TabsTrigger value="month">Monat</TabsTrigger>
+              <TabsTrigger value="week">Woche</TabsTrigger>
+              <TabsTrigger value="agenda">Agenda</TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          {/* Event filter tabs (replaces exam-calendar and school-events) */}
+          <Tabs value={eventFilter} onValueChange={(v) => setEventFilter(v as any)}>
+            <TabsList>
+              <TabsTrigger value="all">Alle</TabsTrigger>
+              <TabsTrigger value="exams">Prüfungen</TabsTrigger>
+              <TabsTrigger value="events">Veranstaltungen</TabsTrigger>
+              <TabsTrigger value="holidays">Ferien</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
 
         <Button
           onClick={() => setIsCreating(true)}
