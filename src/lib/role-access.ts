@@ -9,12 +9,17 @@ export const STUDENT_MANAGER_ROLES: readonly AppRole[] = ['SCHOOL_ADMIN', 'SUPER
 const parentViews: ViewName[] = [
   'dashboard', 'parent-portal', 'calendar', 'communication', 'illness',
   'notification-center', 'announcements', 'settings',
+  'parents', 'grading', 'attendance', 'report-cards', 'school-library',
+  'student-achievements', 'student-career', 'competitions',
 ];
 
 const studentViews: ViewName[] = [
   'dashboard', 'student-portal', 'calendar', 'communication', 'illness',
   'notification-center', 'notebooks', 'homework', 'attendance', 'grading',
   'flower', 'subjects', 'resources', 'competitions', 'portfolio', 'settings',
+  'counseling', 'report-cards', 'student-wellness', 'student-career',
+  'school-library', 'announcements', 'peer-assessment', 'student-achievements',
+  'student-study-planner',
 ];
 
 const teacherViews: ViewName[] = [
