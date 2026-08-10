@@ -163,7 +163,7 @@ export function ProfessionalCalendar({
         if (onEventCreate) {
           await onEventCreate(newEvent);
         }
-        toast.success('Event created successfully');
+        toast.success('Ereignis erfolgreich erstellt');
         setIsCreating(false);
       } catch (error) {
         toast.error('Failed to create event');
@@ -183,7 +183,7 @@ export function ProfessionalCalendar({
         if (onEventUpdate) {
           await onEventUpdate(event);
         }
-        toast.success('Event updated successfully');
+        toast.success('Ereignis aktualisiert successfully');
       } catch (error) {
         toast.error('Failed to update event');
         console.error(error);
@@ -201,7 +201,7 @@ export function ProfessionalCalendar({
           await onEventDelete(eventId);
         }
         setSelectedEvent(null);
-        toast.success('Event deleted successfully');
+        toast.success('Ereignis gelöscht successfully');
       } catch (error) {
         toast.error('Failed to delete event');
         console.error(error);
@@ -350,7 +350,7 @@ export function ProfessionalCalendar({
             size="sm"
             onClick={() => setCurrentDate(new Date())}
           >
-            Today
+            Heute
           </Button>
         </div>
 
@@ -380,7 +380,7 @@ export function ProfessionalCalendar({
           className="gap-2"
         >
           <Plus className="h-4 w-4" />
-          New Event
+          Neues Ereignis
         </Button>
       </div>
 
@@ -427,7 +427,7 @@ export function ProfessionalCalendar({
                     <Badge variant="secondary">{event.type}</Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {format(event.date, 'PPP', { locale: dateLocale })} at {CalendarManager.formatTimeRange(event)}
+                    {format(event.date, 'PPP', { locale: dateLocale })} um {CalendarManager.formatTimeRange(event)}
                   </p>
                   {event.description && (
                     <p className="text-sm mt-2">{event.description}</p>
@@ -507,9 +507,9 @@ function EventDetailDialog({
 
         <div className="space-y-3">
           <div>
-            <Label className="text-xs text-muted-foreground">Date & Time</Label>
+            <Label className="text-xs text-muted-foreground">Datum & Zeit</Label>
             <p className="text-sm">
-              {format(event.date, 'PPP')} at {CalendarManager.formatTimeRange(event)}
+              {format(event.date, 'PPP')} um {CalendarManager.formatTimeRange(event)}
             </p>
           </div>
 
@@ -517,7 +517,7 @@ function EventDetailDialog({
             <div className="flex gap-2 items-start">
               <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
               <div>
-                <Label className="text-xs text-muted-foreground">Location</Label>
+                <Label className="text-xs text-muted-foreground">Ort</Label>
                 <p className="text-sm">{event.location}</p>
               </div>
             </div>
@@ -525,7 +525,7 @@ function EventDetailDialog({
 
           {event.description && (
             <div>
-              <Label className="text-xs text-muted-foreground">Description</Label>
+              <Label className="text-xs text-muted-foreground">Beschreibung</Label>
               <p className="text-sm">{event.description}</p>
             </div>
           )}
@@ -534,7 +534,7 @@ function EventDetailDialog({
             <div className="flex gap-2 items-start">
               <Users className="h-4 w-4 text-muted-foreground mt-1" />
               <div>
-                <Label className="text-xs text-muted-foreground">Attendees</Label>
+                <Label className="text-xs text-muted-foreground">Teilnehmer</Label>
                 <p className="text-sm">{event.attendees.join(', ')}</p>
               </div>
             </div>
@@ -603,12 +603,12 @@ function EventCreatorDialog({
     <Dialog open onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create New Event</DialogTitle>
+          <DialogTitle>Create Neues Ereignis</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div>
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">Titel</Label>
             <Input
               id="title"
               value={formData.title}
@@ -659,7 +659,7 @@ function EventCreatorDialog({
           {!formData.allDay && (
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label htmlFor="startTime">Start Time</Label>
+                <Label htmlFor="startTime">Startzeit</Label>
                 <Input
                   id="startTime"
                   type="time"
@@ -668,7 +668,7 @@ function EventCreatorDialog({
                 />
               </div>
               <div>
-                <Label htmlFor="endTime">End Time</Label>
+                <Label htmlFor="endTime">Endzeit</Label>
                 <Input
                   id="endTime"
                   type="time"
@@ -680,7 +680,7 @@ function EventCreatorDialog({
           )}
 
           <div>
-            <Label htmlFor="location">Location</Label>
+            <Label htmlFor="location">Ort</Label>
             <Input
               id="location"
               value={formData.location}
@@ -690,7 +690,7 @@ function EventCreatorDialog({
           </div>
 
           <div>
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Beschreibung</Label>
             <Textarea
               id="description"
               value={formData.description}
@@ -703,9 +703,9 @@ function EventCreatorDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            Abbrechen
           </Button>
-          <Button onClick={handleSubmit}>Create Event</Button>
+          <Button onClick={handleSubmit}>Ereignis erstellen</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -55,7 +55,7 @@ interface Grade {
   subject: string;
   assessment: string;
   score: number;
-  maxScore: number;
+  maxPunkte: number;
   weight?: number;
   comment?: string;
   gradedAt?: string;
@@ -72,7 +72,7 @@ interface UnifiedGradingPanelProps {
 }
 
 /**
- * Unified Grading Panel
+ * Unified Benotung
  * Consolidates: grading-view.tsx, tablet-grading-view.tsx, grade-analytics-view.tsx
  * Single component supports all viewing modes and devices
  */
@@ -89,7 +89,7 @@ export function UnifiedGradingPanel({
   const [selectedGrade, setSelectedGrade] = useState<Grade | null>(null);
   const [isEditingGrade, setIsEditingGrade] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterSubject, setFilterSubject] = useState('all');
+  const [filterFach, setFilterFach] = useState('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'pending' | 'graded' | 'released'>('all');
   const [viewType, setViewType] = useState<'grid' | 'list' | 'analytics'>(
     variant === 'list' ? 'list' : 'grid'
@@ -116,8 +116,8 @@ export function UnifiedGradingPanel({
         studentName: item.studentName || (item.student ? `${item.student.firstName} ${item.student.lastName}` : '—'),
         subject: typeof item.subject === 'string' ? item.subject : (item.subject?.name || item.subjectId || '—'),
         assessment: item.assessment || item.title || item.name || '—',
-        score: typeof item.score === 'number' ? item.score : (item.maxScore ?? 0),
-        maxScore: item.maxScore ?? 100,
+        score: typeof item.score === 'number' ? item.score : (item.maxPunkte ?? 0),
+        maxPunkte: item.maxPunkte ?? 100,
         weight: item.weight,
         comment: item.comment || item.note || '',
         gradedAt: item.gradedAt || item.date || item.createdAt,
@@ -143,9 +143,9 @@ export function UnifiedGradingPanel({
       );
     }
 
-    // Subject filter
-    if (filterSubject !== 'all') {
-      filtered = filtered.filter((g) => g.subject === filterSubject);
+    // Fach filter
+    if (filterFach !== 'all') {
+      filtered = filtered.filter((g) => g.subject === filterFach);
     }
 
     // Status filter
@@ -154,18 +154,18 @@ export function UnifiedGradingPanel({
     }
 
     setFilteredGrades(filtered);
-  }, [searchTerm, filterSubject, filterStatus]);
+  }, [searchTerm, filterFach, filterStatus]);
 
   // Update filters when any filter changes
   React.useEffect(() => {
     applyFilters(grades);
-  }, [searchTerm, filterSubject, filterStatus, applyFilters]);
+  }, [searchTerm, filterFach, filterStatus, applyFilters]);
 
   // Calculate statistics
   const stats = useMemo(() => {
     const completed = grades.filter((g) => g.status !== 'pending').length;
     const average = grades.length > 0
-      ? (grades.reduce((sum, g) => sum + (g.score / g.maxScore) * 100, 0) / grades.length).toFixed(1)
+      ? (grades.reduce((sum, g) => sum + (g.score / g.maxPunkte) * 100, 0) / grades.length).toFixed(1)
       : 0;
 
     return {
@@ -231,7 +231,7 @@ export function UnifiedGradingPanel({
     }
   }, [mutate]);
 
-  // Subject list for filtering
+  // Fach list for filtering
   const subjects = useMemo(() => {
     const subjectSet = new Set(grades.map((g) => g.subject));
     return Array.from(subjectSet).sort();
@@ -244,7 +244,7 @@ export function UnifiedGradingPanel({
       <div className="grid grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Total Grades</CardTitle>
+            <CardTitle className="text-sm">Noten gesamt</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
@@ -252,7 +252,7 @@ export function UnifiedGradingPanel({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Completed</CardTitle>
+            <CardTitle className="text-sm">Erledigt</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.completed}</div>
@@ -260,7 +260,7 @@ export function UnifiedGradingPanel({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Pending</CardTitle>
+            <CardTitle className="text-sm">Ausstehend</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-500">{stats.pending}</div>
@@ -268,7 +268,7 @@ export function UnifiedGradingPanel({
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Average</CardTitle>
+            <CardTitle className="text-sm">Durchschnitt</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.average}%</div>
@@ -280,10 +280,10 @@ export function UnifiedGradingPanel({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Grades</span>
+            <span>Noten</span>
             <Button onClick={handleSubmitGrades} disabled={stats.pending === stats.total}>
               <CheckCircle2 className="h-4 w-4 mr-2" />
-              Submit Grades
+              Noten einreichen
             </Button>
           </CardTitle>
         </CardHeader>
@@ -292,13 +292,13 @@ export function UnifiedGradingPanel({
             <table className="w-full text-sm">
               <thead className="border-b">
                 <tr>
-                  <th className="text-left py-2 px-3">Student</th>
-                  <th className="text-left py-2 px-3">Subject</th>
-                  <th className="text-left py-2 px-3">Assessment</th>
-                  <th className="text-center py-2 px-3">Score</th>
-                  <th className="text-center py-2 px-3">Percentage</th>
+                  <th className="text-left py-2 px-3">Schüler</th>
+                  <th className="text-left py-2 px-3">Fach</th>
+                  <th className="text-left py-2 px-3">Leistungsüberprüfung</th>
+                  <th className="text-center py-2 px-3">Punkte</th>
+                  <th className="text-center py-2 px-3">Prozent</th>
                   <th className="text-center py-2 px-3">Status</th>
-                  <th className="text-right py-2 px-3">Actions</th>
+                  <th className="text-right py-2 px-3">Aktionen</th>
                 </tr>
               </thead>
               <tbody>
@@ -314,10 +314,10 @@ export function UnifiedGradingPanel({
                     <td className="py-2 px-3">{grade.subject}</td>
                     <td className="py-2 px-3">{grade.assessment}</td>
                     <td className="py-2 px-3 text-center font-semibold">
-                      {grade.score}/{grade.maxScore}
+                      {grade.score}/{grade.maxPunkte}
                     </td>
                     <td className="py-2 px-3 text-center">
-                      {((grade.score / grade.maxScore) * 100).toFixed(1)}%
+                      {((grade.score / grade.maxPunkte) * 100).toFixed(1)}%
                     </td>
                     <td className="py-2 px-3 text-center">
                       <Badge
@@ -373,7 +373,7 @@ export function UnifiedGradingPanel({
               <h3 className="font-semibold">{grade.studentName}</h3>
               <p className="text-sm text-muted-foreground">{grade.subject}</p>
               <div className="flex items-center justify-between">
-                <span className="text-lg font-bold">{grade.score}/{grade.maxScore}</span>
+                <span className="text-lg font-bold">{grade.score}/{grade.maxPunkte}</span>
                 <Badge>{grade.status}</Badge>
               </div>
             </div>
@@ -404,7 +404,7 @@ export function UnifiedGradingPanel({
             </p>
           </div>
           <div className="text-right space-y-1">
-            <div className="font-semibold">{grade.score}/{grade.maxScore}</div>
+            <div className="font-semibold">{grade.score}/{grade.maxPunkte}</div>
             <Badge variant="outline">{grade.status}</Badge>
           </div>
         </motion.div>
@@ -414,11 +414,11 @@ export function UnifiedGradingPanel({
 
   // Analytics view (replaces the removed grade-analytics nav entry)
   const renderAnalyticsView = () => {
-    const avgScore = grades.length > 0
-      ? (grades.reduce((s, g) => s + (g.score / g.maxScore) * 100, 0) / grades.length).toFixed(1)
+    const avgPunkte = grades.length > 0
+      ? (grades.reduce((s, g) => s + (g.score / g.maxPunkte) * 100, 0) / grades.length).toFixed(1)
       : '0';
     const passRate = grades.length > 0
-      ? Math.round((grades.filter(g => (g.score / g.maxScore) >= 0.5).length / grades.length) * 100)
+      ? Math.round((grades.filter(g => (g.score / g.maxPunkte) >= 0.5).length / grades.length) * 100)
       : 0;
 
     // Distribution by subject
@@ -426,7 +426,7 @@ export function UnifiedGradingPanel({
     grades.forEach(g => {
       if (!subjectStats[g.subject]) subjectStats[g.subject] = { count: 0, avg: 0 };
       subjectStats[g.subject].count++;
-      subjectStats[g.subject].avg += (g.score / g.maxScore) * 100;
+      subjectStats[g.subject].avg += (g.score / g.maxPunkte) * 100;
     });
     Object.keys(subjectStats).forEach(s => {
       subjectStats[s].avg = Math.round(subjectStats[s].avg / subjectStats[s].count);
@@ -436,13 +436,13 @@ export function UnifiedGradingPanel({
       <div className="space-y-6">
         {/* Summary cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Durchschnitt</p><p className="text-2xl font-bold text-emerald-600">{avgScore}%</p></CardContent></Card>
+          <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Durchschnitt</p><p className="text-2xl font-bold text-emerald-600">{avgPunkte}%</p></CardContent></Card>
           <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Bestehensquote</p><p className="text-2xl font-bold text-sky-600">{passRate}%</p></CardContent></Card>
           <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Noten gesamt</p><p className="text-2xl font-bold">{grades.length}</p></CardContent></Card>
           <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Fächer</p><p className="text-2xl font-bold">{Object.keys(subjectStats).length}</p></CardContent></Card>
         </div>
 
-        {/* Subject breakdown */}
+        {/* Fach breakdown */}
         <Card>
           <CardHeader><CardTitle className="text-base">Noten nach Fach</CardTitle></CardHeader>
           <CardContent className="space-y-3">
@@ -477,7 +477,7 @@ export function UnifiedGradingPanel({
                 { label: 'ueber 90%', min: 90, max: 101, color: 'bg-emerald-500' },
               ].map(bucket => {
                 const count = grades.filter(g => {
-                  const pct = (g.score / g.maxScore) * 100;
+                  const pct = (g.score / g.maxPunkte) * 100;
                   return pct >= bucket.min && pct < bucket.max;
                 }).length;
                 const max = Math.max(grades.length, 1);
@@ -510,15 +510,15 @@ export function UnifiedGradingPanel({
       {/* Header with filters */}
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="text-2xl font-bold">Grading Panel</h2>
+          <h2 className="text-2xl font-bold">Benotung</h2>
           <div className="flex gap-2">
             <Button size="sm" variant="outline">
               <Download className="h-4 w-4 mr-2" />
-              Export
+              Exportieren
             </Button>
             <Button size="sm" variant="outline">
               <Upload className="h-4 w-4 mr-2" />
-              Import
+              Importieren
             </Button>
           </div>
         </div>
@@ -526,17 +526,17 @@ export function UnifiedGradingPanel({
         {/* Filters */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           <Input
-            placeholder="Search grades..."
+            placeholder="Noten suchen..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
 
-          <Select value={filterSubject} onValueChange={setFilterSubject}>
+          <Select value={filterFach} onValueChange={setFilterFach}>
             <SelectTrigger>
-              <SelectValue placeholder="All subjects" />
+              <SelectValue placeholder="Alle Fächer" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All subjects</SelectItem>
+              <SelectItem value="all">Alle Fächer</SelectItem>
               {subjects.map((subject) => (
                 <SelectItem key={subject} value={subject}>
                   {subject}
@@ -547,13 +547,13 @@ export function UnifiedGradingPanel({
 
           <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as any)}>
             <SelectTrigger>
-              <SelectValue placeholder="All statuses" />
+              <SelectValue placeholder="Alle Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="graded">Graded</SelectItem>
-              <SelectItem value="released">Released</SelectItem>
+              <SelectItem value="all">Alle Status</SelectItem>
+              <SelectItem value="pending">Ausstehend</SelectItem>
+              <SelectItem value="graded">Bewertet</SelectItem>
+              <SelectItem value="released">Veröffentlicht</SelectItem>
             </SelectContent>
           </Select>
 
@@ -628,14 +628,14 @@ function GradeEditDialog({
     <Dialog open onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Grade: {grade.studentName}</DialogTitle>
+          <DialogTitle>Note bearbeiten: {grade.studentName}</DialogTitle>
           <DialogDescription>{grade.subject} - {grade.assessment}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label>Score</Label>
+              <Label>Punkte</Label>
               <Input
                 type="number"
                 value={formData.score}
@@ -643,25 +643,25 @@ function GradeEditDialog({
               />
             </div>
             <div>
-              <Label>Max Score</Label>
+              <Label>Max. Punkte</Label>
               <Input
                 type="number"
-                value={formData.maxScore}
-                onChange={(e) => setFormData({ ...formData, maxScore: parseFloat(e.target.value) })}
+                value={formData.maxPunkte}
+                onChange={(e) => setFormData({ ...formData, maxPunkte: parseFloat(e.target.value) })}
               />
             </div>
           </div>
 
           <div>
-            <Label>Percentage: {((formData.score / formData.maxScore) * 100).toFixed(1)}%</Label>
+            <Label>Prozent: {((formData.score / formData.maxPunkte) * 100).toFixed(1)}%</Label>
           </div>
 
           <div>
-            <Label>Comment</Label>
+            <Label>Kommentar</Label>
             <Input
               value={formData.comment || ''}
               onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
-              placeholder="Add a comment..."
+              placeholder="Kommentar hinzufügen..."
             />
           </div>
         </div>
@@ -687,7 +687,7 @@ function GradeEditDialog({
               onClose();
             }}
           >
-            Save Changes
+            Speichern
           </Button>
         </DialogFooter>
       </DialogContent>
