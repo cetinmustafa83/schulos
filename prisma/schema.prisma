@@ -247,6 +247,8 @@ model User {
   // Module J widgets relations
   dashboardWidgets          DashboardWidget[]
   dashboardLayouts          DashboardLayout[]
+  escalationPoliciesOverridden EscalationPolicy[] @relation("EscalationOverriddenBy")
+  classMessagingLocksLocked     ClassMessagingLock[] @relation("ClassMessagingLockLockedBy")
   passwordResetTokens       PasswordResetToken[]
   twoFactorRecoveryCodes    TwoFactorRecoveryCode[]
 }
@@ -336,6 +338,7 @@ model ClassGroup {
   examPlans           ExamPlan[]
   seatingCharts       SeatingChart[]
   substitutionAssignments SubstitutionAssignment[]
+  classMessagingLocks ClassMessagingLock[]
 }
 
 model ClassGroupTeacher {
@@ -3740,7 +3743,7 @@ model EscalationPolicy {
   updatedAt                 DateTime @updatedAt
 
   school School   @relation(fields: [schoolId], references: [id])
-  overriddenByUser          User?    @relation(fields: [overriddenByUserId], references: [id])
+  overriddenByUser          User?    @relation("EscalationOverriddenBy", fields: [overriddenByUserId], references: [id])
 
   @@index([schoolId])
   @@index([fromRole, toRole])
@@ -3750,6 +3753,7 @@ model EscalationPolicy {
 model ClassMessagingLock {
   id            String    @id @default(cuid())
   classGroupId  String
+  schoolId      String
   lockedByUserId String    // teacher who locked
   lockedFrom     DateTime
   lockedUntil    DateTime? // nullable = "until class ends"
@@ -3758,9 +3762,11 @@ model ClassMessagingLock {
   updatedAt      DateTime  @updatedAt
 
   classGroup ClassGroup @relation(fields: [classGroupId], references: [id])
-  lockedByUser User @relation(fields: [lockedByUserId], references: [id])
+  school       School         @relation(fields: [schoolId], references: [id])
+  lockedByUser User @relation("ClassMessagingLockLockedBy", fields: [lockedByUserId], references: [id])
 
   @@index([classGroupId])
+  @@index([schoolId])
   @@index([lockedByUserId])
   @@index([lockedFrom, lockedUntil])
   @@map("class_messaging_locks")
