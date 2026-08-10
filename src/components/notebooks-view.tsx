@@ -2533,7 +2533,7 @@ function NotebookDetailView({
             </Button>
           </div>
 
-          <ScrollArea className="flex-1 max-h-[calc(100vh-280px)]">
+          <ScrollArea className="flex-1 max-h-[calc(100vh-350px)] min-h-0">
             <div className="p-2 space-y-2">
               {pages.map((page, idx) => {
                 const isDragged = draggedPageId === page.id;
@@ -4668,7 +4668,7 @@ export default function NotebooksView() {
 
   if (selectedNotebook) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <div className="h-[calc(100vh-8rem)] bg-gray-50 dark:bg-gray-950 rounded-lg overflow-hidden">
         <NotebookDetailView
           notebook={selectedNotebook}
           subjectName={selectedNotebook.subjectId ? subjectNameMap[selectedNotebook.subjectId] ?? null : null}

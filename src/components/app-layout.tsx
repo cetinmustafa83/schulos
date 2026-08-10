@@ -1416,7 +1416,7 @@ export default function AppLayout() {
           </div>
         </header>
 
-        <div className="flex-1 p-4 md:p-6 bg-gradient-to-br from-white via-white to-emerald-50/20 dark:from-gray-950 dark:via-gray-950 dark:to-emerald-950/10">
+        <div className="flex-1 p-4 md:p-6 overflow-y-auto bg-gradient-to-br from-white via-white to-emerald-50/20 dark:from-gray-950 dark:via-gray-950 dark:to-emerald-950/10">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentView}
