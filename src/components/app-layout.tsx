@@ -488,7 +488,6 @@ function renderView(view: ViewName) {
     case 'notification-center': return <NotificationCenterView />;
     case 'announcements': return <SchoolAnnouncementsView />;
     case 'peer-assessment': return <PeerAssessmentView />;
-    case 'grade-analytics': return <UnifiedGradingPanel mode="teacher" />;
     case 'student-achievements': return <StudentAchievementsView />;
     case 'student-study-planner': return <StudentStudyPlannerView />;
     case 'seating-chart': return <SeatingChartView />;
