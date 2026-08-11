@@ -91,9 +91,9 @@ export default function SignageAdminPage() {
 
       <Tabs defaultValue="displays" className="w-full">
         <TabsList>
-          <TabsTrigger value="displays">Displays</TabsTrigger>
-          <TabsTrigger value="messages">Messages</TabsTrigger>
-          <TabsTrigger value="activity">Activity Log</TabsTrigger>
+          <TabsTrigger value="displays">Bildschirme</TabsTrigger>
+          <TabsTrigger value="messages">Nachrichten</TabsTrigger>
+          <TabsTrigger value="activity">Aktivitätsprotokoll</TabsTrigger>
         </TabsList>
 
         {/* Displays Tab */}
@@ -214,7 +214,7 @@ export default function SignageAdminPage() {
             <Card>
               <CardContent className="pt-6 text-center text-gray-500">
                 <AlertCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Select a display to manage messages</p>
+                <p>Wählen Sie einen Bildschirm zur Verwaltung von Nachrichten</p>
               </CardContent>
             </Card>
           )}
@@ -224,8 +224,8 @@ export default function SignageAdminPage() {
         <TabsContent value="activity">
           <Card>
             <CardHeader>
-              <CardTitle>Activity Log</CardTitle>
-              <CardDescription>Recent signage events and alerts</CardDescription>
+              <CardTitle>Aktivitätsprotokoll</CardTitle>
+              <CardDescription>Aktuelle Digital-Schild-Ereignisse und Warnungen</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center text-gray-500 py-8">
@@ -240,58 +240,58 @@ export default function SignageAdminPage() {
       {showNewMessage && selectedSignage && (
         <Card className="fixed inset-4 z-50 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-md max-h-[90vh] overflow-y-auto">
           <CardHeader>
-            <CardTitle>New Message</CardTitle>
+            <CardTitle>Neue Nachricht</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleCreateMessage} className="space-y-4">
               <div>
-                <Label htmlFor="title">Title</Label>
+                <Label htmlFor="title">Titel</Label>
                 <Input
                   id="title"
                   name="title"
-                  placeholder="Message title"
+                  placeholder="Nachrichtentitel"
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="content">Content</Label>
+                <Label htmlFor="content">Inhalt</Label>
                 <textarea
                   id="content"
                   name="content"
-                  placeholder="Message content"
+                  placeholder="Nachrichteninhalt"
                   className="w-full h-24 px-3 py-2 border border-gray-300 rounded-md"
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="messageType">Type</Label>
+                <Label htmlFor="messageType">Typ</Label>
                 <select
                   id="messageType"
                   name="messageType"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   required
                 >
-                  <option value="announcement">Announcement</option>
-                  <option value="alert">Alert</option>
-                  <option value="emergency">Emergency</option>
-                  <option value="notification">Notification</option>
+                  <option value="announcement">Ankündigung</option>
+                  <option value="alert">Warnung</option>
+                  <option value="emergency">Notfall</option>
+                  <option value="notification">Benachrichtigung</option>
                 </select>
               </div>
 
               <div>
-                <Label htmlFor="priority">Priority</Label>
+                <Label htmlFor="priority">Priorität</Label>
                 <select
                   id="priority"
                   name="priority"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   required
                 >
-                  <option value="low">Low</option>
+                  <option value="low">Niedrig</option>
                   <option value="normal">Normal</option>
-                  <option value="high">High</option>
-                  <option value="critical">Critical</option>
+                  <option value="high">Hoch</option>
+                  <option value="critical">Kritisch</option>
                 </select>
               </div>
 

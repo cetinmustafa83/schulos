@@ -46,7 +46,7 @@ export default function ComplianceDashboard() {
       <div className="p-8">
         <Card className="border-red-200 bg-red-50">
           <CardContent className="pt-6">
-            <p className="text-red-600">Failed to load compliance dashboard</p>
+            <p className="text-red-600">Compliance-Dashboard konnte nicht geladen werden</p>
           </CardContent>
         </Card>
       </div>
@@ -113,7 +113,7 @@ export default function ComplianceDashboard() {
             <div className="flex items-center gap-3">
               <Users className="w-8 h-8 text-orange-600" />
               <div>
-                <p className="text-sm text-slate-600">Consultations</p>
+                <p className="text-sm text-slate-600">Beratungen</p>
                 <p className="font-semibold text-slate-900">{data.consultations.length}</p>
               </div>
             </div>

@@ -613,7 +613,7 @@ function EventCreatorDialog({
               id="title"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="Event title"
+              placeholder="Ereignistitel"
             />
           </div>
 
@@ -635,7 +635,7 @@ function EventCreatorDialog({
             </div>
 
             <div>
-              <Label htmlFor="date">Date</Label>
+              <Label htmlFor="date">Datum</Label>
               <Input
                 id="date"
                 type="date"
@@ -685,7 +685,7 @@ function EventCreatorDialog({
               id="location"
               value={formData.location}
               onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-              placeholder="Event location"
+              placeholder="Ereignisort"
             />
           </div>
 
@@ -695,7 +695,7 @@ function EventCreatorDialog({
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Event description"
+              placeholder="Ereignisbeschreibung"
               rows={3}
             />
           </div>
