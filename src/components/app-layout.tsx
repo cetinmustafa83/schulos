@@ -178,8 +178,6 @@ import CounselingView from './counseling-view';
 import DisciplinaryView from './disciplinary-view';
 import AITestsView from './ai-tests-view';
 import AIStudioView from './ai-studio-view';
-import AIChatWidget from './ai-chat-widget';
-import VirtualCharacter from './virtual-character';
 import ParentPortalView from './parent-portal-view';
 import NotificationCenterView from './notification-center-view';
 import SchoolAnnouncementsView from './school-announcements-view';
@@ -1649,12 +1647,6 @@ export default function AppLayout() {
 
       {/* ─── Onboarding Tour ─────────────────────────────────────── */}
       <OnboardingTour open={onboardingOpen} onClose={() => setOnboardingOpen(false)} />
-
-      {/* ─── AI Chat Widget ─────────────────────────────────────────── */}
-      <AIChatWidget />
-
-      {/* ─── Virtual Character ──────────────────────────────────────── */}
-      <VirtualCharacter userRole={currentUser?.role ?? 'TEACHER'} />
     </SidebarProvider>
   );
 }
