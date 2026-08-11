@@ -88,3 +88,5 @@ bun.lock
 /playwright-report/
 /playwright/.cache/
 .last-run.json
+prisma/db/
+prisma/prisma/
