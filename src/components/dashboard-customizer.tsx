@@ -65,7 +65,7 @@ export function DashboardCustomizer({
       <Dialog open={showWidgetGallery} onOpenChange={setShowWidgetGallery}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Widget</DialogTitle>
+            <DialogTitle>Widget hinzufügen</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4">
             {availableWidgets.map((type) => (

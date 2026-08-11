@@ -80,7 +80,7 @@ export default function SignageAdminPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Emergency Signage</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Notfall-Digital-Schild</h1>
           <p className="text-gray-600 mt-1">Manage displays, messages, and emergency alerts</p>
         </div>
         <Button onClick={() => setShowNewMessage(true)} size="lg" className="gap-2">

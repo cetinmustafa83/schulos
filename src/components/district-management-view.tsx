@@ -470,7 +470,7 @@ export default function DistrictManagementView() {
       <div className="flex items-center justify-center h-96">
         <div className="text-center space-y-3">
           <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto" />
-          <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">Access Denied</p>
+          <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">Zugriff verweigert</p>
           <p className="text-sm text-gray-500 dark:text-gray-400">You need admin privileges to access this view.</p>
         </div>
       </div>

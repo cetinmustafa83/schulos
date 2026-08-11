@@ -56,7 +56,7 @@ export default function ComplianceDashboard() {
   return (
     <div className="space-y-8 p-8">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Compliance Monitoring Dashboard</h1>
+        <h1 className="text-3xl font-bold text-slate-900">Compliance-Monitoring-Dashboard</h1>
         <p className="text-slate-600 mt-2">
           Track your school&apos;s data protection compliance status and document management
         </p>
@@ -73,7 +73,7 @@ export default function ComplianceDashboard() {
                 <AlertCircle className="w-8 h-8 text-yellow-600" />
               )}
               <div>
-                <p className="text-sm text-slate-600">Onboarding Status</p>
+                <p className="text-sm text-slate-600">Onboarding-Status</p>
                 <p className="font-semibold text-slate-900">
                   {data.status?.onboardingCompleted ? "Complete" : "Pending"}
                 </p>
@@ -87,7 +87,7 @@ export default function ComplianceDashboard() {
             <div className="flex items-center gap-3">
               <FileText className="w-8 h-8 text-blue-600" />
               <div>
-                <p className="text-sm text-slate-600">Data Retention Policies</p>
+                <p className="text-sm text-slate-600">Datenaufbewahrungsrichtlinien</p>
                 <p className="font-semibold text-slate-900">
                   {data.policiesConfigured} / {data.policiesReviewed} reviewed
                 </p>
@@ -124,7 +124,7 @@ export default function ComplianceDashboard() {
       {/* Data Retention Policies */}
       <Card>
         <CardHeader>
-          <CardTitle>Active Data Retention Policies</CardTitle>
+          <CardTitle>Aktive Datenaufbewahrungsrichtlinien</CardTitle>
           <CardDescription>
             Configured retention periods for each data category
           </CardDescription>
@@ -170,7 +170,7 @@ export default function ComplianceDashboard() {
       {data.consultations.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Consultation Log</CardTitle>
+            <CardTitle>Beratungsprotokoll</CardTitle>
             <CardDescription>
               Staff and parent body consultations per module
             </CardDescription>

@@ -330,7 +330,7 @@ export function ComplianceWizard({ schoolId, onComplete }: ComplianceWizardProps
       {state.step === 2 && (
         <Card>
           <CardHeader>
-            <CardTitle>Data Retention Periods</CardTitle>
+            <CardTitle>Aufbewahrungsfristen</CardTitle>
             <CardDescription>
               Configure retention periods for each data category (state-specific defaults provided)
             </CardDescription>
@@ -358,7 +358,7 @@ export function ComplianceWizard({ schoolId, onComplete }: ComplianceWizardProps
       {state.step === 3 && (
         <Card>
           <CardHeader>
-            <CardTitle>Consultation Checklist</CardTitle>
+            <CardTitle>Beratungs-Checkliste</CardTitle>
             <CardDescription>
               Log consultations with staff and parent bodies per module
             </CardDescription>
@@ -502,7 +502,7 @@ export function ComplianceWizard({ schoolId, onComplete }: ComplianceWizardProps
       {state.step === 5 && (
         <Card>
           <CardHeader>
-            <CardTitle>Compliance Setup Complete</CardTitle>
+            <CardTitle>Compliance-Einrichtung abgeschlossen</CardTitle>
             <CardDescription>
               Review your configuration before finalizing
             </CardDescription>

@@ -603,7 +603,7 @@ function EventCreatorDialog({
     <Dialog open onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Neues Ereignis</DialogTitle>
+          <DialogTitle>Neues Ereignis erstellen</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">

@@ -1465,13 +1465,13 @@ export default function DataImportExportView() {
                 <div className="flex items-start gap-3 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
                   <Info className="h-5 w-5 text-emerald-600 mt-0.5 shrink-0" />
                   <div className="text-sm text-emerald-800 dark:text-emerald-200">
-                    <p className="font-medium mb-1">Data Management Best Practices</p>
+                    <p className="font-medium mb-1">Best Practices für Datenverwaltung</p>
                     <ul className="list-disc list-inside space-y-1 text-xs">
                       <li>Always create a backup before performing bulk operations</li>
                       <li>Review the data preview before importing to catch errors early</li>
                       <li>Use column mapping to ensure correct field alignment</li>
                       <li>Run cleanup periodically to remove orphaned records</li>
-                      <li>Export data regularly for archival purposes</li>
+                      <li>Exportieren Sie regelmäßig Daten zur Archivierung</li>
                     </ul>
                   </div>
                 </div>

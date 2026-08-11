@@ -99,7 +99,7 @@ export function ExamSessionMonitor({
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 text-sm">
                 <Eye className="w-4 h-4 text-gray-500" />
-                <span className="text-gray-600">Exam Mode Active</span>
+                <span className="text-gray-600">Prüfungsmodus aktiv</span>
               </div>
 
               {securityMetrics.riskScore > 0 && (

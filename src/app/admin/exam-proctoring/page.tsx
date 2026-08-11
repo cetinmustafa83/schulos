@@ -111,7 +111,7 @@ export default function ExamProctoringPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Exam Proctoring</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Prüfungsüberwachung</h1>
           <p className="text-gray-600 mt-1">Monitor active exam sessions and suspicious activity</p>
         </div>
       </div>
@@ -121,7 +121,7 @@ export default function ExamProctoringPage() {
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm font-medium">Active Sessions</p>
+              <p className="text-gray-600 text-sm font-medium">Aktive Sitzungen</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">{activeCount}</p>
             </div>
             <Clock className="w-8 h-8 text-blue-500" />
@@ -141,7 +141,7 @@ export default function ExamProctoringPage() {
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm font-medium">Total Sessions</p>
+              <p className="text-gray-600 text-sm font-medium">Sitzungen gesamt</p>
               <p className="text-2xl font-bold text-gray-900 mt-1">{sessions.length}</p>
             </div>
             <Eye className="w-8 h-8 text-purple-500" />
