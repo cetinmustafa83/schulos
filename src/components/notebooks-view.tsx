@@ -7,7 +7,7 @@ import {
   Palette, Leaf, Plus, Star, Trash2, ChevronLeft,
   MoreHorizontal, Music, PenTool, Search, X,
   Share2, Eye, EyeOff, Edit3, Hash, Bookmark,
-  PenLine, Layers, BookMarked, Globe, Sparkles,
+  PenLine, Layers, BookMarked, Globe, Sparkles, Eraser,
   Bold, Italic as ItalicIcon, Underline as UnderlineIcon,
   List, ListOrdered, AlignLeftIcon, AlignCenterIcon, AlignRightIcon,
   Heading1, Heading2, Heading3, CheckCircle2,
@@ -1437,7 +1437,10 @@ function NotebookDetailView({
   const [currentPageId, setCurrentPageId] = useState<string | null>(null);
   const [pageContent, setPageContent] = useState('');
   const [pageTitle, setPageTitle] = useState('');
-  const [viewMode, setViewMode] = useState<'text' | 'split' | 'drawing'>('text');
+  // Unified is the default view; other modes stay reachable from the (removed) toggle's branch code.
+  const [viewMode, setViewMode] = useState<'unified' | 'text' | 'split' | 'drawing'>('unified');
+  const [inkEnabled, setInkEnabled] = useState(false);
+  const [inkTool, setInkTool] = useState<'ballpoint' | 'eraser'>('ballpoint');
   const [splitRatio, setSplitRatio] = useState(50); // percentage for text side
   const [saving, setSaving] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -1762,6 +1765,23 @@ function NotebookDetailView({
       toast.error(t('notebooks.error_save'));
     }
   }, [currentPage, notebook.id, onUpdatePage]);
+
+  // Debounced ink auto-save from the embedded overlay (unified mode)
+  const inkAutoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleInkAutoSave = useCallback((drawingData: string) => {
+    if (!currentPage) return;
+    if (inkAutoSaveTimerRef.current) clearTimeout(inkAutoSaveTimerRef.current);
+    inkAutoSaveTimerRef.current = setTimeout(async () => {
+      try {
+        await onUpdatePage(currentPage.id, {
+          drawingData,
+          contentType: currentPage.textContent ? 'mixed' : 'drawing',
+        });
+      } catch {
+        // silent; next stroke retries
+      }
+    }, 1500);
+  }, [currentPage, onUpdatePage]);
 
   // Drag-and-drop handlers for page reorder
   const handleDragStart = useCallback((e: React.DragEvent, pageId: string) => {
@@ -2124,38 +2144,6 @@ function NotebookDetailView({
           </Popover>
         )}
 
-        {/* View mode toggle — Text / Split / Drawing */}
-        <div className="flex items-center rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden shrink-0">
-          <Button
-            variant={viewMode === 'text' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setViewMode('text')}
-            className={`min-h-[40px] rounded-none border-0 px-3 ${viewMode === 'text' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''}`}
-            title={t('notebooks.view_text_only')}
-          >
-            <Edit3 className="w-4 h-4" />
-          </Button>
-          <div className="w-px h-6 bg-gray-200 dark:bg-gray-700" />
-          <Button
-            variant={viewMode === 'split' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setViewMode('split')}
-            className={`min-h-[40px] rounded-none border-0 px-3 ${viewMode === 'split' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''}`}
-            title={t('notebooks.view_split')}
-          >
-            <Columns2 className="w-4 h-4" />
-          </Button>
-          <div className="w-px h-6 bg-gray-200 dark:bg-gray-700" />
-          <Button
-            variant={viewMode === 'drawing' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setViewMode('drawing')}
-            className={`min-h-[40px] rounded-none border-0 px-3 ${viewMode === 'drawing' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''}`}
-            title={t('notebooks.view_drawing_only')}
-          >
-            <PenLine className="w-4 h-4" />
-          </Button>
-        </div>
 
         {/* Version history button */}
         <Button
@@ -2680,7 +2668,97 @@ function NotebookDetailView({
                 </Button>
               </div>
 
-              {viewMode === 'drawing' ? (
+              {viewMode === 'unified' ? (
+                /* Unified mode — one page: type with keyboard, draw with pen. */
+                <div className="flex-1 flex flex-col overflow-hidden">
+                  <div className="flex items-center gap-2 px-3 py-1.5 border-b border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/50 backdrop-blur-sm">
+                    <WysiwygToolbar editorRef={editorRef} onFormatChange={handleFormatChange} />
+                    <div className="flex-1" />
+                    <Button
+                      variant={inkEnabled && inkTool === 'ballpoint' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => {
+                        if (!inkEnabled) { setInkEnabled(true); setInkTool('ballpoint'); }
+                        else if (inkTool === 'eraser') { setInkTool('ballpoint'); }
+                        else { setInkEnabled(false); }
+                      }}
+                      className={`min-h-[36px] gap-1.5 rounded-full ${inkEnabled && inkTool === 'ballpoint' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}`}
+                      title={t('notebooks.ink_toggle')}
+                    >
+                      <PenLine className="w-4 h-4" />
+                      {t('notebooks.ink_toggle')}
+                    </Button>
+                    <Button
+                      variant={inkEnabled && inkTool === 'eraser' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => { setInkEnabled(true); setInkTool('eraser'); }}
+                      className={`min-h-[36px] gap-1.5 rounded-full ${inkEnabled && inkTool === 'eraser' ? 'bg-gray-700 hover:bg-gray-800 text-white' : ''}`}
+                      title={t('drawing.tool_eraser')}
+                    >
+                      <Eraser className="w-4 h-4" />
+                      {t('drawing.tool_eraser')}
+                    </Button>
+                  </div>
+
+                  <div className="flex-1 overflow-auto p-3 relative">
+                    <div
+                      className="w-full max-w-3xl mx-auto relative"
+                      style={{ backgroundColor: '#fff' }}
+                    >
+                      <div
+                        className="relative p-6"
+                        style={getPageBackgroundCSS(currentPage.background ?? notebook.notebookType)}
+                        onMouseMove={handleEditorMouseMove}
+                      >
+                          {(['lined', 'deutschheft', 'englischheft', 'religionsheft', 'geschichtsheft', 'sachkundeheft', 'calligraphy'].includes(currentPage.background ?? notebook.notebookType)) && (
+                            <div
+                              className="absolute top-0 left-[60px] w-[2px] h-full pointer-events-none z-10"
+                              style={{ backgroundColor: 'rgba(239, 68, 68, 0.35)' }}
+                            />
+                          )}
+                          <div
+                            ref={editorRef}
+                            contentEditable
+                            suppressContentEditableWarning
+                            onInput={handleEditorInput}
+                            data-placeholder={t('notebooks.page_content') + '...'}
+                            className="w-full min-h-[500px] bg-transparent outline-none text-base text-gray-800 dark:text-gray-200 focus:ring-0 prose prose-sm max-w-none [&:empty]:before:content-[attr(data-placeholder)] [&:empty]:before:text-gray-300 [&:empty]:dark:before:text-gray-600 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-2 [&_h1]:mt-4 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mb-1.5 [&_h2]:mt-3 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mb-1 [&_h3]:mt-2 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-2 [&_li]:mb-0.5"
+                            style={{ lineHeight: notebook.notebookType === 'lined' || notebook.notebookType === 'calligraphy' ? '32px' : '1.5' }}
+                          />
+                          {/* Ink overlay — always mounted so strokes survive pen off; pointer-events off when disabled */}
+                          <div className={`absolute inset-0 z-20 ${inkEnabled ? '' : 'pointer-events-none'}`}>
+                            <DrawingCanvas
+                              key={currentPage.id}
+                              embedded
+                              backgroundType="transparent"
+                              initialDrawingData={currentPage.drawingData ?? undefined}
+                              onAutoSave={handleInkAutoSave}
+                              tool={inkTool}
+                            />
+                          </div>
+                          <div className="flex items-center justify-center pt-8 pb-2">
+                            <span className="text-xs font-mono text-gray-400 dark:text-gray-500">
+                              — {currentPage.pageNumber} —
+                            </span>
+                          </div>
+                      </div>
+
+                      {/* Corner fold (dog-ear) for bookmarked pages */}
+                      {currentPage.isBookmark && (
+                        <div className="absolute top-0 right-0 w-8 h-8 pointer-events-none z-30">
+                          <div
+                            className="w-full h-full"
+                            style={{
+                              background: 'linear-gradient(135deg, #fff 50%, #fbbf24 50%)',
+                              boxShadow: '-2px 2px 4px rgba(0,0,0,0.1)',
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : viewMode === 'drawing' ? (
                 /* Full drawing mode - render DrawingCanvas */
                 <motion.div
                   initial={{ opacity: 0, x: 30 }}

@@ -27,6 +27,7 @@ import {
   ZoomOut,
   Activity,
   Highlighter,
+  Funnel,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -74,7 +75,7 @@ export interface StrokePoint {
 
 export interface Stroke {
   id: string;
-  tool: 'pencil' | 'pen' | 'line' | 'rectangle' | 'circle' | 'eraser' | 'highlighter';
+  tool: ToolType;
   color: string;
   width: number;
   points: StrokePoint[];
@@ -85,18 +86,35 @@ export interface Stroke {
 export interface DrawingCanvasProps {
   width?: number;
   height?: number;
-  backgroundType?: 'blank' | 'lined' | 'grid' | 'dotted';
+  backgroundType?: 'blank' | 'lined' | 'grid' | 'dotted' | 'transparent';
   initialDrawingData?: string;
   onSave?: (drawingData: string, imageData: string) => void;
+  /** Debounced auto-save callback (embedded mode) — receives stroke JSON only. */
+  onAutoSave?: (drawingData: string) => void;
+  /** Overlay mode: no toolbar/dialogs, transparent canvas fills parent. */
+  embedded?: boolean;
+  /** External tool control (embedded mode): notebook header switches pen/eraser. */
+  tool?: ToolType;
   onExit?: () => void;
   subjectId?: string;
   classGroupId?: string;
   title?: string;
 }
 
-type ToolType = 'pencil' | 'pen' | 'line' | 'rectangle' | 'circle' | 'eraser' | 'highlighter';
-type BackgroundType = 'blank' | 'lined' | 'grid' | 'dotted';
+type ToolType =
+  | 'ballpoint' | 'fountain' | 'fine-line' | 'marker' | 'highlighter'
+  | 'pencil' | 'pen'
+  | 'line' | 'arrow' | 'cross' | 'oval' | 'square' | 'funnel' | 'rectangle' | 'circle'
+  | 'eraser';
+type BackgroundType = 'blank' | 'lined' | 'grid' | 'dotted' | 'transparent';
 type GuideMode = 'off' | 'basic' | 'circles' | 'perspective';
+
+const SHAPE_TOOL_IDS = new Set<ToolType>(['line', 'arrow', 'cross', 'oval', 'square', 'funnel', 'rectangle', 'circle']);
+const FREEHAND_TOOL_IDS = new Set<ToolType>(['pencil', 'pen', 'ballpoint', 'fountain', 'fine-line', 'marker', 'eraser', 'highlighter']);
+
+// ponytail: user asked "3-4 saniye basili tut"; 650ms is the usable stylus hold.
+// Tune here if classroom testing wants a longer press.
+const LONG_PRESS_DELAY = 650;
 
 /* ── Constants ─────────────────────────────────────────────────────── */
 
@@ -205,6 +223,11 @@ function drawBackground(
   h: number,
   bgType: BackgroundType
 ) {
+  if (bgType === 'transparent') {
+    ctx.clearRect(0, 0, w, h);
+    return;
+  }
+
   ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(0, 0, w, h);
 
@@ -375,7 +398,7 @@ function drawStroke(
     ctx.globalAlpha = 0.7;
   }
 
-  if (stroke.tool === 'pencil' || stroke.tool === 'pen' || stroke.tool === 'eraser' || stroke.tool === 'highlighter') {
+  if (FREEHAND_TOOL_IDS.has(stroke.tool)) {
     if (stroke.points.length === 1) {
       const p = stroke.points[0];
       const w = stroke.tool === 'eraser' ? stroke.width * 2 : stroke.width;
@@ -388,13 +411,12 @@ function drawStroke(
         ctx.fillStyle = stroke.color;
       }
       ctx.fill();
-    } else if (stroke.tool === 'pen') {
-      // Calligraphy pen: smooth with pressure-based width variation
+    } else if (stroke.tool === 'pen' || stroke.tool === 'fountain' || stroke.tool === 'ballpoint') {
+      // Writing pens: smooth with pressure-based width variation
       ctx.beginPath();
       ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
 
       for (let i = 1; i < stroke.points.length - 1; i++) {
-        const prev = stroke.points[i - 1];
         const curr = stroke.points[i];
         const next = stroke.points[i + 1];
         const midX = (curr.x + next.x) / 2;
@@ -402,7 +424,8 @@ function drawStroke(
 
         // Pressure-based width variation
         const pressure = curr.pressure ?? 0.5;
-        ctx.lineWidth = stroke.width * (0.5 + pressure);
+        const base = stroke.tool === 'fountain' ? 0.4 : stroke.tool === 'ballpoint' ? 0.7 : 0.5;
+        ctx.lineWidth = stroke.width * (base + pressure * (1 - base));
         ctx.quadraticCurveTo(curr.x, curr.y, midX, midY);
       }
 
@@ -434,13 +457,58 @@ function drawStroke(
     ctx.moveTo(stroke.startPoint.x, stroke.startPoint.y);
     ctx.lineTo(stroke.endPoint.x, stroke.endPoint.y);
     ctx.stroke();
+  } else if (stroke.tool === 'arrow' && stroke.startPoint && stroke.endPoint) {
+    const { x: x1, y: y1 } = stroke.startPoint;
+    const { x: x2, y: y2 } = stroke.endPoint;
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const headLen = Math.max(12, stroke.width * 3);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6), y2 - headLen * Math.sin(angle - Math.PI / 6));
+    ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6), y2 - headLen * Math.sin(angle + Math.PI / 6));
+    ctx.closePath();
+    ctx.fillStyle = stroke.color;
+    ctx.fill();
+  } else if (stroke.tool === 'cross' && stroke.startPoint && stroke.endPoint) {
+    const { x: x1, y: y1 } = stroke.startPoint;
+    const { x: x2, y: y2 } = stroke.endPoint;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.moveTo(x1, y2);
+    ctx.lineTo(x2, y1);
+    ctx.stroke();
+  } else if (stroke.tool === 'funnel' && stroke.startPoint && stroke.endPoint) {
+    // Funnel/Trichter: narrow top, wide bottom (like a cone).
+    const { x: x1, y: y1 } = stroke.startPoint;
+    const { x: x2, y: y2 } = stroke.endPoint;
+    const topW = Math.abs(x2 - x1) * 0.35;
+    const cx = (x1 + x2) / 2;
+    ctx.beginPath();
+    ctx.moveTo(cx - topW / 2, y1);
+    ctx.lineTo(cx + topW / 2, y1);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo(x1, y2);
+    ctx.closePath();
+    ctx.stroke();
   } else if (stroke.tool === 'rectangle' && stroke.startPoint && stroke.endPoint) {
     const x = Math.min(stroke.startPoint.x, stroke.endPoint.x);
     const y = Math.min(stroke.startPoint.y, stroke.endPoint.y);
     const w = Math.abs(stroke.endPoint.x - stroke.startPoint.x);
     const h = Math.abs(stroke.endPoint.y - stroke.startPoint.y);
     ctx.strokeRect(x, y, w, h);
-  } else if (stroke.tool === 'circle' && stroke.startPoint && stroke.endPoint) {
+  } else if (stroke.tool === 'square' && stroke.startPoint && stroke.endPoint) {
+    const x1 = stroke.startPoint.x, y1 = stroke.startPoint.y;
+    const x2 = stroke.endPoint.x, y2 = stroke.endPoint.y;
+    const side = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
+    const x = x2 >= x1 ? x1 : x1 - side;
+    const y = y2 >= y1 ? y1 : y1 - side;
+    ctx.strokeRect(x, y, side, side);
+  } else if ((stroke.tool === 'circle' || stroke.tool === 'oval') && stroke.startPoint && stroke.endPoint) {
     const cx = (stroke.startPoint.x + stroke.endPoint.x) / 2;
     const cy = (stroke.startPoint.y + stroke.endPoint.y) / 2;
     const rx = Math.abs(stroke.endPoint.x - stroke.startPoint.x) / 2;
@@ -459,6 +527,9 @@ export default function DrawingCanvas({
   backgroundType = 'blank',
   initialDrawingData,
   onSave,
+  onAutoSave,
+  embedded = false,
+  tool,
   onExit,
   title: propTitle,
 }: DrawingCanvasProps) {
@@ -492,11 +563,47 @@ export default function DrawingCanvas({
   const [isDrawing, setIsDrawing] = useState(false);
 
   // Tool state
-  const [activeTool, setActiveTool] = useState<ToolType>('pencil');
+  const [activeTool, setActiveTool] = useState<ToolType>('ballpoint');
+
+  // External tool control (embedded mode): keep in sync with the notebook header.
+  useEffect(() => {
+    if (tool) setActiveTool(tool);
+  }, [tool]);
   const [strokeColor, setStrokeColor] = useState('#000000');
   const [strokeWidth, setStrokeWidth] = useState(3);
   const [bgType, setBgType] = useState<BackgroundType>(backgroundType);
   const [guideMode, setGuideMode] = useState<GuideMode>('off');
+
+  // Radial context menu (long-press)
+  const [radialMenu, setRadialMenu] = useState<{ x: number; y: number } | null>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressTriggeredRef = useRef(false);
+  const pressStartRef = useRef<StrokePoint | null>(null);
+
+  const openRadialMenu = useCallback((x: number, y: number) => {
+    setRadialMenu({ x, y });
+    longPressTriggeredRef.current = true;
+    // Long-press is not a stroke: drop the stroke started on pointerdown.
+    setIsDrawing(false);
+    setCurrentStroke(null);
+  }, []);
+
+  const closeRadialMenu = useCallback(() => {
+    setRadialMenu(null);
+  }, []);
+
+  const startLongPress = useCallback((x: number, y: number) => {
+    longPressTriggeredRef.current = false;
+    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = setTimeout(() => openRadialMenu(x, y), LONG_PRESS_DELAY);
+  }, [openRadialMenu]);
+
+  const cancelLongPress = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
 
   // Set default color for highlighter
   const handleToolChange = useCallback((tool: ToolType) => {
@@ -535,15 +642,23 @@ export default function DrawingCanvas({
     const updateSize = () => {
       if (containerRef.current) {
         const rect = containerRef.current.getBoundingClientRect();
-        setCanvasSize({
-          width: Math.floor(rect.width),
-          height: Math.floor(rect.height),
+        setCanvasSize((prev) => {
+          const width = Math.max(1, Math.floor(rect.width));
+          const height = Math.max(1, Math.floor(rect.height));
+          if (prev.width === width && prev.height === height) return prev;
+          return { width, height };
         });
       }
     };
     updateSize();
+    const el = containerRef.current;
+    const observer = new ResizeObserver(updateSize);
+    if (el) observer.observe(el);
     window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', updateSize);
+    };
   }, []);
 
   /* ── Build background layer cache ──────────────────────────────── */
@@ -652,18 +767,22 @@ export default function DrawingCanvas({
     }
     autoSaveTimerRef.current = setTimeout(() => {
       if (strokes.length > 0) {
-        try {
-          localStorage.setItem(
-            LOCAL_STORAGE_KEY,
-            JSON.stringify({ strokes, bgType, title: drawingTitle, updatedAt: new Date().toISOString() })
-          );
-          setLastAutoSave(new Date());
-        } catch {
-          // ignore storage errors
+        if (embedded && onAutoSave) {
+          onAutoSave(JSON.stringify(strokes));
+        } else {
+          try {
+            localStorage.setItem(
+              LOCAL_STORAGE_KEY,
+              JSON.stringify({ strokes, bgType, title: drawingTitle, updatedAt: new Date().toISOString() })
+            );
+            setLastAutoSave(new Date());
+          } catch {
+            // ignore storage errors
+          }
         }
       }
     }, AUTO_SAVE_DEBOUNCE);
-  }, [strokes, bgType, drawingTitle]);
+  }, [strokes, bgType, drawingTitle, embedded, onAutoSave]);
 
   useEffect(() => {
     debouncedAutoSave();
@@ -697,10 +816,18 @@ export default function DrawingCanvas({
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<HTMLCanvasElement>) => {
       e.preventDefault();
+      if (radialMenu) {
+        closeRadialMenu();
+        return;
+      }
       const canvas = canvasRef.current;
       if (!canvas) return;
 
       const point = getCanvasPoint(canvas, e.nativeEvent);
+      pressStartRef.current = point;
+      // Menu is positioned in CSS pixels relative to the canvas wrapper.
+      const rect = canvas.getBoundingClientRect();
+      startLongPress(e.clientX - rect.left, e.clientY - rect.top);
       setIsDrawing(true);
 
       const newStroke: Stroke = {
@@ -709,7 +836,7 @@ export default function DrawingCanvas({
         color: strokeColor,
         width: strokeWidth,
         points: [point],
-        ...(activeTool === 'line' || activeTool === 'rectangle' || activeTool === 'circle'
+        ...(SHAPE_TOOL_IDS.has(activeTool)
           ? { startPoint: { x: point.x, y: point.y }, endPoint: { x: point.x, y: point.y } }
           : {}),
       };
@@ -717,19 +844,27 @@ export default function DrawingCanvas({
       setCurrentStroke(newStroke);
       setRedoStack([]);
     },
-    [activeTool, strokeColor, strokeWidth]
+    [activeTool, strokeColor, strokeWidth, radialMenu, closeRadialMenu, startLongPress]
   );
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<HTMLCanvasElement>) => {
       if (!isDrawing || !currentStroke) return;
       e.preventDefault();
+      if (longPressTriggeredRef.current) return;
       const canvas = canvasRef.current;
       if (!canvas) return;
 
       const point = getCanvasPoint(canvas, e.nativeEvent);
 
-      if (currentStroke.tool === 'line' || currentStroke.tool === 'rectangle' || currentStroke.tool === 'circle') {
+      // Moving = drawing, not holding: cancel the pending long-press.
+      if (!longPressTriggeredRef.current && pressStartRef.current) {
+        const dx = point.x - pressStartRef.current.x;
+        const dy = point.y - pressStartRef.current.y;
+        if (dx * dx + dy * dy > 144) cancelLongPress(); // >12px
+      }
+
+      if (SHAPE_TOOL_IDS.has(currentStroke.tool)) {
         setCurrentStroke((prev) =>
           prev ? { ...prev, endPoint: { x: point.x, y: point.y } } : null
         );
@@ -739,11 +874,17 @@ export default function DrawingCanvas({
         );
       }
     },
-    [isDrawing, currentStroke]
+    [isDrawing, currentStroke, cancelLongPress]
   );
 
   const handlePointerUp = useCallback(
     (e: React.PointerEvent<HTMLCanvasElement>) => {
+      cancelLongPress();
+      pressStartRef.current = null;
+      if (longPressTriggeredRef.current) {
+        longPressTriggeredRef.current = false;
+        return;
+      }
       if (!isDrawing || !currentStroke) return;
       e.preventDefault();
       const canvas = canvasRef.current;
@@ -752,7 +893,7 @@ export default function DrawingCanvas({
       const point = getCanvasPoint(canvas, e.nativeEvent);
 
       let finalStroke: Stroke;
-      if (currentStroke.tool === 'line' || currentStroke.tool === 'rectangle' || currentStroke.tool === 'circle') {
+      if (SHAPE_TOOL_IDS.has(currentStroke.tool)) {
         finalStroke = { ...currentStroke, endPoint: { x: point.x, y: point.y } };
       } else {
         // Simplify points for freehand strokes (performance optimization)
@@ -767,7 +908,7 @@ export default function DrawingCanvas({
       setCurrentStroke(null);
       setIsDrawing(false);
     },
-    [isDrawing, currentStroke]
+    [isDrawing, currentStroke, cancelLongPress]
   );
 
   /* ── Undo / Redo ────────────────────────────────────────────────── */
@@ -904,14 +1045,22 @@ export default function DrawingCanvas({
   /* ── Tool definitions ───────────────────────────────────────────── */
 
   const tools: Array<{ id: ToolType; icon: React.ReactNode; label: string }> = [
-    { id: 'pencil', icon: <Pencil className="h-5 w-5" />, label: t('drawing.tool_pencil') },
-    { id: 'pen', icon: <PenTool className="h-5 w-5" />, label: t('drawing.tool_pen') },
+    { id: 'ballpoint', icon: <PenTool className="h-5 w-5" />, label: t('drawing.tool_ballpoint') },
+    { id: 'fountain', icon: <Pencil className="h-5 w-5" />, label: t('drawing.tool_fountain') },
+    { id: 'fine-line', icon: <PenTool className="h-5 w-5" />, label: t('drawing.tool_fine_line') },
+    { id: 'marker', icon: <Highlighter className="h-5 w-5" />, label: t('drawing.tool_marker') },
     { id: 'highlighter', icon: <Highlighter className="h-5 w-5" />, label: t('drawing.tool_highlighter') },
+    { id: 'arrow', icon: <Minus className="h-5 w-5" />, label: t('drawing.tool_arrow') },
     { id: 'line', icon: <Minus className="h-5 w-5" />, label: t('drawing.tool_line') },
-    { id: 'rectangle', icon: <Square className="h-5 w-5" />, label: t('drawing.tool_rectangle') },
-    { id: 'circle', icon: <Circle className="h-5 w-5" />, label: t('drawing.tool_circle') },
+    { id: 'cross', icon: <X className="h-5 w-5" />, label: t('drawing.tool_cross') },
+    { id: 'oval', icon: <Circle className="h-5 w-5" />, label: t('drawing.tool_oval') },
+    { id: 'square', icon: <Square className="h-5 w-5" />, label: t('drawing.tool_square') },
+    { id: 'funnel', icon: <Funnel className="h-5 w-5" />, label: t('drawing.tool_funnel') },
     { id: 'eraser', icon: <Eraser className="h-5 w-5" />, label: t('drawing.tool_eraser') },
   ];
+
+  const penTools = tools.filter((tool) => tool.id === 'ballpoint' || tool.id === 'fountain' || tool.id === 'fine-line' || tool.id === 'marker' || tool.id === 'highlighter');
+  const shapeTools = tools.filter((tool) => SHAPE_TOOL_IDS.has(tool.id));
 
   const bgOptions: Array<{ id: BackgroundType; icon: React.ReactNode; label: string }> = [
     { id: 'blank', icon: <Square className="h-4 w-4" />, label: t('drawing.bg_blank') },
@@ -928,6 +1077,136 @@ export default function DrawingCanvas({
   ];
 
   /* ── Render ─────────────────────────────────────────────────────── */
+
+  /* ── Radial context menu (long-press) — dynamic per active tool ── */
+
+  const renderRadialMenu = () => {
+    if (!radialMenu) return null;
+    const isEraser = activeTool === 'eraser';
+    const isHighlight = activeTool === 'highlighter' || activeTool === 'marker';
+    const palette = isHighlight ? HIGHLIGHTER_COLORS.slice(0, 6) : PEN_COLORS.slice(0, 6);
+
+    // Ring items adapt to the tool: colors for pens/highlighters/shapes,
+    // size presets + quick pen switch for the eraser.
+    const ring: Array<{
+      key: string;
+      label?: string;
+      color?: string;
+      angle: number;
+      onSelect: () => void;
+    }> = [];
+
+    if (isEraser) {
+      [
+        { key: 'size-s', label: 'S', w: 4 },
+        { key: 'size-m', label: 'M', w: 10 },
+        { key: 'size-l', label: 'L', w: 18 },
+      ].forEach((p, i) => {
+        const angle = (i / 3) * Math.PI * 2 - Math.PI / 2;
+        ring.push({
+          key: p.key,
+          label: p.label,
+          angle,
+          onSelect: () => { setStrokeWidth(p.w); closeRadialMenu(); },
+        });
+      });
+      ring.push({
+        key: 'back-to-pen',
+        label: '✎',
+        angle: Math.PI,
+        onSelect: () => { setActiveTool('ballpoint'); closeRadialMenu(); },
+      });
+    } else {
+      palette.forEach((color, i) => {
+        const angle = (i / palette.length) * Math.PI * 2 - Math.PI / 2;
+        ring.push({
+          key: color,
+          color,
+          angle,
+          onSelect: () => { setStrokeColor(color); closeRadialMenu(); },
+        });
+      });
+    }
+
+    return (
+      <div
+        className="pointer-events-none absolute z-30"
+        style={{ left: radialMenu.x, top: radialMenu.y }}
+      >
+        <div className="relative h-44 w-44 -translate-x-1/2 -translate-y-1/2">
+          {/* Center: eraser icon or current width */}
+          <div className="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-900/90 shadow-lg flex items-center justify-center">
+            {isEraser ? (
+              <Eraser className="h-5 w-5 text-white" />
+            ) : (
+              <span className="text-sm font-semibold text-white">{strokeWidth}</span>
+            )}
+          </div>
+          {/* Width − / + (eraser size for the eraser) */}
+          <button
+            className="pointer-events-auto absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white shadow-md flex items-center justify-center text-xs font-bold text-gray-700 border border-gray-200"
+            onClick={() => setStrokeWidth((s) => Math.max(1, s - 1))}
+            aria-label={t('drawing.stroke_width') + ' -'}
+          >
+            −
+          </button>
+          <button
+            className="pointer-events-auto absolute left-1/2 bottom-0 -translate-x-1/2 translate-y-1/2 h-10 w-10 rounded-full bg-white shadow-md flex items-center justify-center text-xs font-bold text-gray-700 border border-gray-200"
+            onClick={() => setStrokeWidth((s) => Math.min(20, s + 1))}
+            aria-label={t('drawing.stroke_width') + ' +'}
+          >
+            +
+          </button>
+          {/* Dynamic ring items */}
+          {ring.map((item) => (
+            <button
+              key={item.key}
+              className="pointer-events-auto absolute h-9 w-9 rounded-full shadow-md border-2 transition-transform hover:scale-125 flex items-center justify-center"
+              style={{
+                left: `calc(50% + ${Math.cos(item.angle) * 56}px)`,
+                top: `calc(50% + ${Math.sin(item.angle) * 56}px)`,
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: item.color ?? '#ffffff',
+                borderColor: item.color ? (strokeColor === item.color ? '#10b981' : '#e5e7eb') : '#e5e7eb',
+              }}
+              onClick={item.onSelect}
+              aria-label={item.color ? `Color ${item.color}` : `${t('drawing.stroke_width')} ${item.label}`}
+            >
+              {item.label ? <span className="text-xs font-bold text-gray-700">{item.label}</span> : null}
+            </button>
+          ))}
+          {/* Close */}
+          <button
+            className="pointer-events-auto absolute right-0 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-gray-100 shadow-md flex items-center justify-center text-gray-500 border border-gray-200"
+            onClick={closeRadialMenu}
+            aria-label={t('action.close')}
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  if (embedded) {
+    return (
+      <div ref={containerRef} className="relative h-full w-full overflow-hidden">
+        <canvas
+          ref={canvasRef}
+          width={canvasSize.width}
+          height={canvasSize.height}
+          className="absolute inset-0 h-full w-full touch-none canvas-no-zoom canvas-no-select"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
+          role="img"
+          aria-label={t('drawing.canvas_label') || 'Drawing canvas'}
+        />
+        {renderRadialMenu()}
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full flex-col bg-gray-50 dark:bg-gray-950">
@@ -957,30 +1236,80 @@ export default function DrawingCanvas({
           {/* Divider */}
           <div className="mx-0.5 sm:mx-1 h-8 w-px bg-gray-700 hidden sm:block" />
 
-          {/* Drawing tools */}
-          <TooltipProvider>
-            {tools.map((tool) => (
-              <Tooltip key={tool.id}>
+          {/* Writing instruments */}
+          <div className="flex items-center gap-0.5 rounded-lg bg-gray-800/60 p-1">
+            {penTools.map((tool) => (
+              <TooltipProvider key={tool.id}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleToolChange(tool.id)}
+                      className={`h-9 w-9 min-touch transition-all rounded-md ${
+                        activeTool === tool.id
+                          ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30'
+                          : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      }`}
+                      aria-label={tool.label}
+                      aria-pressed={activeTool === tool.id}
+                    >
+                      {tool.icon}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{tool.label}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ))}
+          </div>
+
+          {/* Shapes */}
+          <div className="flex items-center gap-0.5 rounded-lg bg-gray-800/60 p-1">
+            {shapeTools.map((tool) => (
+              <TooltipProvider key={tool.id}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleToolChange(tool.id)}
+                      className={`h-9 w-9 min-touch transition-all rounded-md ${
+                        activeTool === tool.id
+                          ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30'
+                          : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      }`}
+                      aria-label={tool.label}
+                      aria-pressed={activeTool === tool.id}
+                    >
+                      {tool.icon}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{tool.label}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ))}
+            <TooltipProvider>
+              <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleToolChange(tool.id)}
-                    className={`h-10 w-10 min-touch transition-all rounded-lg ${
-                      activeTool === tool.id
-                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30 scale-105'
-                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                    onClick={() => handleToolChange('eraser')}
+                    className={`h-9 w-9 min-touch transition-all rounded-md ${
+                      activeTool === 'eraser'
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/30'
+                        : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                     }`}
-                    aria-label={tool.label}
-                    aria-pressed={activeTool === tool.id}
+                    aria-label={t('drawing.tool_eraser')}
+                    aria-pressed={activeTool === 'eraser'}
                   >
-                    {tool.icon}
+                    <Eraser className="h-5 w-5" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>{tool.label}</TooltipContent>
+                <TooltipContent>{t('drawing.tool_eraser')}</TooltipContent>
               </Tooltip>
-            ))}
-          </TooltipProvider>
+            </TooltipProvider>
+          </div>
 
           {/* Divider */}
           <div className="mx-0.5 sm:mx-1 h-8 w-px bg-gray-700 hidden sm:block" />
@@ -1362,6 +1691,7 @@ export default function DrawingCanvas({
             role="img"
             aria-label={t('drawing.canvas_label') || 'Drawing canvas'}
           />
+          {renderRadialMenu()}
           {/* Tool indicator */}
           <div className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-2">
             <Badge
