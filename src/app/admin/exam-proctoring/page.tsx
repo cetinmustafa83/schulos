@@ -1,5 +1,6 @@
-// @ts-nocheck
 'use client';
+
+// @ts-nocheck
 
 import { useState, useEffect } from 'react';
 import { useApiGet } from '@/lib/hooks/useApi';
