@@ -18,6 +18,10 @@ function randomDateWithinLast(days: number): Date {
   return new Date(past.getTime() + Math.random() * diff)
 }
 
+function addDays(date: Date, days: number): Date {
+  return new Date(date.getTime() + days * 24 * 60 * 60 * 1000)
+}
+
 // ─── Helper: random integer in range [min, max] ──────────────────────────
 function randInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min
@@ -1515,6 +1519,110 @@ async function main() {
 
   console.log(`    Created 5 comment categories, 12 comment bank entries`)
 
+  // ─── 16. Homework ──────────────────────────────────────────────────────
+  console.log('  📖 Creating homework...')
+  const homeworkData = [
+    { title: 'Arbeitsblatt: Zahlenraum bis 1000', description: 'Löse die Aufgaben auf dem Arbeitsblatt.', subjectId: mathSubject.id, classGroupId: class3a.id, dueDate: addDays(now, 3), type: 'assignment' },
+    { title: 'Einmaleins üben', description: 'Trainiere das kleine Einmaleins.', subjectId: mathSubject.id, classGroupId: class3a.id, dueDate: addDays(now, 5), type: 'practice' },
+    { title: 'Lesetagebuch: Märchen', description: 'Lies ein Märchen und schreibe eine kurze Zusammenfassung.', subjectId: germanSubject.id, classGroupId: class3a.id, dueDate: addDays(now, 7), type: 'reading' },
+    { title: 'Wortschatz: Kapitel 4', description: 'Lerne die neuen Vokabeln.', subjectId: germanSubject.id, classGroupId: class3b.id, dueDate: addDays(now, 2), type: 'practice' },
+    { title: 'Sachunterricht: Tiere im Wald', description: 'Recherchiere drei Tiere und ihre Lebensweise.', subjectId: mathSubject.id, classGroupId: class3b.id, dueDate: addDays(now, 10), type: 'research' },
+  ]
+  for (const hw of homeworkData) {
+    await prisma.homework.create({
+      data: {
+        schoolId: school.id,
+        classGroupId: hw.classGroupId,
+        subjectId: hw.subjectId,
+        teacherId: teacher.id,
+        title: hw.title,
+        description: hw.description,
+        dueDate: hw.dueDate,
+        homeworkType: hw.type,
+        isPublished: true,
+        isDemo: true,
+      },
+    })
+  }
+  console.log(`    Created ${homeworkData.length} homework entries`)
+
+  // ─── 17. Attendance Sessions ──────────────────────────────────────────
+  console.log('  📋 Creating attendance sessions...')
+  let attendanceCount = 0
+  for (let d = 0; d < 5; d++) {
+    const date = addDays(now, -d)
+    if (date.getDay() === 0 || date.getDay() === 6) continue // Skip weekends
+
+    for (const cls of [class3a, class3b]) {
+      const session = await prisma.attendanceSession.create({
+        data: {
+          classGroupId: cls.id,
+          teacherId: teacher.id,
+          date,
+          subjectId: mathSubject.id,
+          period: '1. Stunde',
+          status: 'COMPLETED',
+        },
+      })
+
+      const classStudents = cls.id === class3a.id ? students3a : students3b
+      for (const student of classStudents) {
+        const r = Math.random()
+        const status = r > 0.92 ? 'ABSENT' : r > 0.86 ? 'LATE' : 'PRESENT'
+        await prisma.attendanceRecord.create({
+          data: {
+            sessionId: session.id,
+            studentId: student.id,
+            status,
+            arrivalTime: status === 'LATE' ? '08:25' : null,
+          },
+        })
+        attendanceCount++
+      }
+    }
+  }
+  console.log(`    Created ${attendanceCount} attendance records`)
+
+  // ─── 18. Notebooks ─────────────────────────────────────────────────────
+  console.log('  📓 Creating notebooks...')
+  const notebookData = [
+    { title: 'Mathematik Heft 3a', type: 'matheheft', color: '#10b981', subjectId: mathSubject.id, classGroupId: class3a.id },
+    { title: 'Deutsch Heft 3a', type: 'deutschheft', color: '#0ea5e9', subjectId: germanSubject.id, classGroupId: class3a.id },
+    { title: 'Mathematik Heft 3b', type: 'matheheft', color: '#f59e0b', subjectId: mathSubject.id, classGroupId: class3b.id },
+    { title: 'Deutsch Heft 3b', type: 'deutschheft', color: '#8b5cf6', subjectId: germanSubject.id, classGroupId: class3b.id },
+  ]
+  for (const nb of notebookData) {
+    const notebook = await prisma.notebook.create({
+      data: {
+        schoolId: school.id,
+        ownerId: teacher.id,
+        ownerType: 'TEACHER',
+        subjectId: nb.subjectId,
+        classGroupId: nb.classGroupId,
+        title: nb.title,
+        notebookType: nb.type,
+        color: nb.color,
+        isPublic: true,
+        isDemo: true,
+      },
+    })
+    // Add 3 pages per notebook
+    for (let p = 1; p <= 3; p++) {
+      await prisma.notebookPage.create({
+        data: {
+          notebookId: notebook.id,
+          pageNumber: p,
+          title: `Seite ${p}`,
+          contentType: 'text',
+          textContent: p === 1 ? `Willkommen im ${nb.title}!` : '',
+          drawingData: '[]',
+          background: nb.type === 'matheheft' ? 'grid' : nb.type === 'deutschheft' ? 'lined' : 'lined',
+        },
+      })
+    }
+  }
+  console.log(`    Created ${notebookData.length} notebooks with pages`)
+
   // ─── Summary ───────────────────────────────────────────────────────────
   console.log('\n  ✅ Seed completed successfully!\n')
   console.log('  📊 Summary:')
@@ -1536,6 +1644,9 @@ async function main() {
   console.log(`  Behavior:     ${behaviorCategoryDefs.length} categories, ${incidentCount} incidents`)
   console.log(`  Rubrics:      3 (Aufsatzbewertung, Mündliche Prüfung, Projektpräsentation)`)
   console.log(`  Comments:     5 categories, 12 bank entries`)
+  console.log(`  Homework:     ${homeworkData.length} assignments`)
+  console.log(`  Attendance:   ${attendanceCount} records across sessions`)
+  console.log(`  Notebooks:    ${notebookData.length} notebooks with pages`)
   console.log('  ─────────────────────────────────────────')
   console.log('\n  🔑 Login: demo@competencetrack.org / Demo2025!')
 }
