@@ -53,7 +53,8 @@ export type ViewName =
   | 'school-newsletter'
   | 'school-transport'
   | 'peer-assessment'
-  | 'ai-studio';
+  | 'ai-studio'
+  | 'eco-archive';
 
 export interface CurrentUser {
   id: string;

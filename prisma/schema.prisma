@@ -36,6 +36,10 @@ model School {
 
   users           User[]
   schoolYears     SchoolYear[]
+  archivedDocuments ArchivedDocument[]
+  governmentReports GovernmentReport[]
+  ecoMetrics        EcoMetric[]
+  storageConfig     StorageConfig?
   classGroups     ClassGroup[]
   students        Student[]
   subjects        Subject[]
@@ -235,6 +239,8 @@ model User {
   dashboardWidgets          DashboardWidget[]
   dashboardLayouts          DashboardLayout[]
   passwordResetTokens       PasswordResetToken[]
+  uploadedDocuments     ArchivedDocument[] @relation("DocumentUploader")
+  createdReports        GovernmentReport[]  @relation("ReportCreator")
   twoFactorRecoveryCodes    TwoFactorRecoveryCode[]
 }
 
@@ -3558,3 +3564,108 @@ model DashboardLayout {
   @@map("dashboard_layouts")
 }
 
+
+// ─── Digital Archive (Papierloses Archiv) ────────────────────────────
+model ArchivedDocument {
+  id            String   @id @default(cuid())
+  schoolId      String
+  title         String
+  documentType  String   // REPORT_CARD, CERTIFICATE, ENROLLMENT, LETTER, CONTRACT, OTHER
+  category      String   // STUDENT, STAFF, FINANCE, ADMIN, LEGAL
+  studentId     String?
+  staffId       String?
+  filePath      String   // NAS path or cloud URL
+  fileName      String
+  fileSize      Int      // bytes
+  mimeType      String
+  scanDate      DateTime @default(now())
+  documentDate  DateTime? // date on the document itself
+  checksum      String?  // SHA-256 for integrity verification
+  ocrText       String?  // extracted text via OCR (searchable)
+  tags          String?  // JSON array of tags
+  retentionDate DateTime? // when this document can be deleted per policy
+  isConfidential Boolean @default(false)
+  accessLevel   String   @default("STAFF") // STAFF, ADMIN, DPO
+  uploadedBy    String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  school       School   @relation(fields: [schoolId], references: [id])
+  uploader     User     @relation("DocumentUploader", fields: [uploadedBy], references: [id])
+
+  @@index([schoolId, category])
+  @@index([schoolId, documentType])
+  @@index([studentId])
+  @@map("archived_documents")
+}
+
+// ─── Government Portal (Behördenportal) ──────────────────────────────
+model GovernmentReport {
+  id              String   @id @default(cuid())
+  schoolId        String
+  reportType      String   // STATISTIK_SCHULamt, SCHULBESUCH, FUERDERUNG, PERSONAL, BILDUNGSBERICHT
+  reportingPeriod String   // e.g., "2025-Q3", "2025/2026-S1"
+  status          String   @default("DRAFT") // DRAFT, SUBMITTED, ACKNOWLEDGED, REJECTED
+  data            String   // JSON: the report payload
+  generatedAt     DateTime @default(now())
+  submittedAt     DateTime?
+  acknowledgedAt  DateTime?
+  submissionId    String?  // government portal confirmation ID
+  notes           String?
+  createdBy       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  school    School @relation(fields: [schoolId], references: [id])
+  creator   User   @relation("ReportCreator", fields: [createdBy], references: [id])
+
+  @@index([schoolId, reportType])
+  @@index([schoolId, status])
+  @@map("government_reports")
+}
+
+// ─── Eco Metrics (Papiereinsparung) ──────────────────────────────────
+model EcoMetric {
+  id            String   @id @default(cuid())
+  schoolId      String
+  date          DateTime @default(now())
+  paperSavedSheets Int   // sheets of paper saved that day
+  paperSavedGrams  Int   // grams of paper saved
+  co2SavedKg       Float // CO2 saved in kg (production + transport)
+  waterSavedLiters Float // water saved in liters
+  treesSaved       Float // trees saved (approx)
+  source           String // NOTEBOOK, REPORT_CARD, WORKSHEET, ANNOUNCEMENT, OTHER
+  notes            String?
+
+  school School @relation(fields: [schoolId], references: [id])
+
+  @@index([schoolId, date])
+  @@map("eco_metrics")
+}
+
+// ─── NAS / Storage Settings ──────────────────────────────────────────
+model StorageConfig {
+  id              String   @id @default(cuid())
+  schoolId        String   @unique
+  nasEnabled      Boolean  @default(false)
+  nasHost         String?  // e.g., "192.168.1.100" or "nas.schule.de"
+  nasPort         Int      @default(445) // SMB port
+  nasShare        String?  // e.g., "/SchulOS"
+  nasUsername     String?
+  nasPasswordEnc  String?  // encrypted password
+  nasProtocol     String   @default("SMB") // SMB, NFS, WebDAV, S3
+  cloudEnabled    Boolean  @default(false)
+  cloudProvider   String?  // "nextcloud", "owncloud", "s3"
+  cloudUrl        String?
+  cloudApiKey     String?
+  backupFrequency String   @default("daily") // hourly, daily, weekly
+  lastBackup      DateTime?
+  lastBackupSize  Int?     // bytes
+  backupStatus    String   @default("never") // never, success, failed, in_progress
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  school School @relation(fields: [schoolId], references: [id])
+
+  @@map("storage_configs")
+}

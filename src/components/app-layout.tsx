@@ -178,6 +178,7 @@ import CounselingView from './counseling-view';
 import DisciplinaryView from './disciplinary-view';
 import AITestsView from './ai-tests-view';
 import AIStudioView from './ai-studio-view';
+import EcoArchiveView from './eco-archive-view';
 import ParentPortalView from './parent-portal-view';
 import NotificationCenterView from './notification-center-view';
 import SchoolAnnouncementsView from './school-announcements-view';
@@ -285,6 +286,7 @@ const navSections: NavSection[] = [
       { key: 'competencies', icon: BookOpen, labelKey: 'nav.competencies' },
       { key: 'districts', icon: Building2, labelKey: 'nav.districts' },
       { key: 'settings', icon: Settings, labelKey: 'nav.settings' },
+      { key: 'eco-archive', icon: Leaf, labelKey: 'nav.eco-archive' },
     ],
   },
 ];
@@ -318,6 +320,7 @@ const studentNavSections: NavSection[] = [
       { key: 'notification-center', icon: Bell, labelKey: 'nav.notification_center' },
       { key: 'announcements', icon: Megaphone, labelKey: 'nav.announcements' },
       { key: 'settings', icon: Settings, labelKey: 'nav.settings' },
+      { key: 'eco-archive', icon: Leaf, labelKey: 'nav.eco-archive' },
     ],
   },
 ];
@@ -482,6 +485,7 @@ function renderView(view: ViewName) {
     case 'disciplinary': return <DisciplinaryView />;
     case 'ai-tests': return <AITestsView />;
     case 'ai-studio': return <AIStudioView />;
+    case 'eco-archive': return <EcoArchiveView />;
     case 'parent-portal': return <ParentPortalView />;
     case 'notification-center': return <NotificationCenterView />;
     case 'announcements': return <SchoolAnnouncementsView />;

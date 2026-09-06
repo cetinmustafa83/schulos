@@ -31,7 +31,7 @@ const teacherViews: ViewName[] = [
   'peer-assessment', 'subjects', 'competitions', 'parents',
   'announcements', 'school-library', 'school-transport',
   'counseling', 'student-wellness', 'student-career',
-  'ai-tests', 'ai-studio', 'settings', 'data-import-export',
+  'ai-tests', 'ai-studio', 'settings', 'data-import-export', 'eco-archive',
 ];
 
 const vicePrincipalViews: ViewName[] = [
