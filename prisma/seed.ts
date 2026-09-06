@@ -1623,6 +1623,66 @@ async function main() {
   }
   console.log(`    Created ${notebookData.length} notebooks with pages`)
 
+  // ─── 19. Homework Submissions ──────────────────────────────────────────
+  console.log('  📝 Creating homework submissions...')
+  const homeworkEntries = await prisma.homework.findMany({ where: { isDemo: true } })
+  let submissionCount = 0
+  for (const hw of homeworkEntries) {
+    const classStudents = hw.classGroupId === class3a.id ? students3a : students3b
+    for (const student of classStudents) {
+      const r = Math.random()
+      if (r > 0.3) { // 70% submitted
+        const status = r > 0.85 ? 'graded' : r > 0.5 ? 'submitted' : 'pending'
+        await prisma.homeworkSubmission.create({
+          data: {
+            homeworkId: hw.id,
+            studentId: student.id,
+            content: status === 'submitted' || status === 'graded' ? 'Hausaufgabe erledigt.' : null,
+            status,
+            score: status === 'graded' ? Math.round(Math.random() * 30 + 70) : null,
+            feedback: status === 'graded' ? 'Gut gemacht!' : null,
+            submittedAt: status !== 'pending' ? randomDateWithinLast(3) : null,
+            gradedAt: status === 'graded' ? new Date() : null,
+            isDemo: true,
+          },
+        })
+        submissionCount++
+      }
+    }
+  }
+  console.log(`    Created ${submissionCount} homework submissions`)
+
+  // ─── 20. Calendar Events ───────────────────────────────────────────────
+  console.log('  📅 Creating calendar events...')
+  const calendarEvents = [
+    { title: 'Mathetest', type: 'exam', daysAhead: 5, subjectId: mathSubject.id, classGroupId: class3a.id, allDay: false, start: '10:00', end: '10:45' },
+    { title: 'Deutschtest', type: 'exam', daysAhead: 8, subjectId: germanSubject.id, classGroupId: class3a.id, allDay: false, start: '10:00', end: '10:45' },
+    { title: 'Klassenfahrt', type: 'reminder', daysAhead: 14, classGroupId: class3a.id, allDay: true },
+    { title: 'Elternsprechtag', type: 'reminder', daysAhead: 7, allDay: true },
+    { title: 'Mathetest 3b', type: 'exam', daysAhead: 6, subjectId: mathSubject.id, classGroupId: class3b.id, allDay: false, start: '09:00', end: '09:45' },
+    { title: 'Lesewettbewerb', type: 'reminder', daysAhead: 12, subjectId: germanSubject.id, classGroupId: class3b.id, allDay: false, start: '11:00', end: '12:00' },
+    { title: 'Sportfest', type: 'reminder', daysAhead: 20, allDay: true },
+    { title: 'Zeugnisausgabe', type: 'reminder', daysAhead: 30, allDay: true },
+  ]
+  for (const ev of calendarEvents) {
+    await prisma.calendarEvent.create({
+      data: {
+        schoolId: school.id,
+        teacherId: teacher.id,
+        title: ev.title,
+        date: addDays(now, ev.daysAhead),
+        startTime: ev.start || null,
+        endTime: ev.end || null,
+        eventType: ev.type,
+        subjectId: ev.subjectId || null,
+        classGroupId: ev.classGroupId || null,
+        allDay: ev.allDay,
+        notes: ev.type === 'exam' ? 'Bitte ausreichend üben.' : null,
+      },
+    })
+  }
+  console.log(`    Created ${calendarEvents.length} calendar events`)
+
   // ─── Summary ───────────────────────────────────────────────────────────
   console.log('\n  ✅ Seed completed successfully!\n')
   console.log('  📊 Summary:')
@@ -1647,6 +1707,8 @@ async function main() {
   console.log(`  Homework:     ${homeworkData.length} assignments`)
   console.log(`  Attendance:   ${attendanceCount} records across sessions`)
   console.log(`  Notebooks:    ${notebookData.length} notebooks with pages`)
+  console.log(`  Submissions:  ${submissionCount} homework submissions`)
+  console.log(`  Calendar:     ${calendarEvents.length} events`)
   console.log('  ─────────────────────────────────────────')
   console.log('\n  🔑 Login: demo@competencetrack.org / Demo2025!')
 }
